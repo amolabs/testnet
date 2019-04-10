@@ -11,9 +11,11 @@ services:
       - @dataroot@/amod0/tendermint:/tendermint:Z
       - @dataroot@/amod0/amo:/amo:Z
     ports:
-      - "26656:26656"
+      - "26656-26657:26656-26657"
 
   amod1:
+    depends_on:
+      - amod0
     container_name: amod1
     image: amolabs/amod
     networks:
