@@ -1,0 +1,8 @@
+# vim
+.*.sw*
+
+# binary output
+/amod
+/tendermint
+DOCKER*/amod
+DOCKER*/tendermint

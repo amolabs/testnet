@@ -1,0 +1,53 @@
+# vim: set expandtab sw=2:
+version: '3.3'
+services:
+  amod0:
+    container_name: amod0
+    image: amolabs/amod
+    networks:
+      amonet:
+        ipv4_address: 192.167.10.2
+    volumes:
+      - @dataroot@/amod0/tendermint:/tendermint:Z
+      - @dataroot@/amod0/amo:/amo:Z
+    ports:
+      - "26656:26656"
+
+  amod1:
+    container_name: amod1
+    image: amolabs/amod
+    networks:
+      amonet:
+        ipv4_address: 192.167.10.3
+    volumes:
+      - @dataroot@/amod1/tendermint:/tendermint:Z
+      - @dataroot@/amod1/amo:/amo:Z
+
+  #pdb0:
+  #container_name: pdb0
+  #image: paust-db
+  #networks:
+  #amonet:
+  #ipv4_address: 192.167.10.4
+  #volumes:
+  #- /tmp/pdb0:/tendermint:Z
+  #ports:
+  #- "26656:26659"
+
+  #proxy:
+  #container_name: proxy
+  #image: amolabs/proxy
+  #networks:
+  #amonet:
+  #ipv4_address: 192.167.10.5
+  #ports:
+  #- "80:80"
+
+networks:
+  amonet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      -
+        subnet: 192.167.10.0/24
