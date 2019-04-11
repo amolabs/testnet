@@ -5,8 +5,8 @@ ENV AMOHOME /amo
 ENV TMHOME /tendermint
 ENV MONIKER amo
 
-RUN addgroup amo && adduser -S -G amo amo -h "$AMOHOME"
-USER amo
+#RUN addgroup amo && adduser -S -G amo amo -h "$AMOHOME"
+#USER amo
 
 VOLUME [ $AMOHOME ]
 VOLUME [ $TMHOME ]
