@@ -1,3 +1,5 @@
+.PHONY: save load
+
 TMPATH=$(GOPATH)/src/github.com/tendermint/tendermint
 AMOPATH=$(GOPATH)/src/github.com/amolabs/amoabci
 
@@ -22,3 +24,9 @@ amod:
 amo-node: tendermint amod
 	cp -f tendermint amod DOCKER_amod/
 	docker build -t amolabs/amod DOCKER_amod
+
+save: amo-node
+	docker image save amolabs/amod | gzip > amod.tgz
+
+load: amod.tgz
+	zcat amod.tgz | docker image load
