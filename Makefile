@@ -3,7 +3,7 @@
 TMPATH=$(GOPATH)/src/github.com/tendermint/tendermint
 AMOPATH=$(GOPATH)/src/github.com/amolabs/amoabci
 
-all: amo-node
+all: amod-iamge rpcproxy-image
 
 tendermint:
 	-git clone https://github.com/tendermint/tendermint $(TMPATH)
@@ -21,12 +21,17 @@ amod:
 	make -C $(AMOPATH) TARGET=linux build
 	cp $(AMOPATH)/amod ./
 
-amo-node: tendermint amod
+amod-iamge: tendermint amod
 	cp -f tendermint amod DOCKER_amod/
 	docker build -t amolabs/amod DOCKER_amod
 
-save: amo-node
-	docker image save amolabs/amod | gzip > amod.tgz
+rpcproxy-image:
+	docker build -t amolabs/rpcproxy DOCKER_rpcproxy
 
-load: amod.tgz
+save:
+	docker image save amolabs/amod | gzip > amod.tgz
+	docker image save amolabs/rpcproxy | gzip > rpcproxy.tgz
+
+load:
 	zcat amod.tgz | docker image load
+	zcat rpcproxy.tgz | docker image load
