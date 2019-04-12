@@ -42,8 +42,8 @@ services:
     networks:
       amonet:
         ipv4_address: 192.167.10.5
-        ports:
-          - "80:80"
+    ports:
+      - "80:80"
 
 networks:
   amonet:
