@@ -28,6 +28,10 @@
   ],
   "app_state": {
     "balances": [
+      {
+        "owner": "51AD2903CEDA052D584E289E9F6B7C2F9601165A",
+        "amount": "100000000000000000000"
+      }
     ],
     "stakes": [
       {
