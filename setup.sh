@@ -17,7 +17,7 @@ fi
 mkdir -p $DATAROOT/amod0/amo
 mkdir -p $DATAROOT/amod0/tendermint/config
 cp -f config.toml.in config.toml
-sed -e s/@moniker@/$MONIKER"0"/ -i.tmp config.toml
+sed -e s/@moniker@/$MONIKER/ -i.tmp config.toml
 sed -e s/@seeds@/$SEEDS/ -i.tmp config.toml
 
 mv -f config.toml $DATAROOT/amod0/tendermint/config/
@@ -31,11 +31,11 @@ ID=${ID//}
 mkdir -p $DATAROOT/amod1/amo
 mkdir -p $DATAROOT/amod1/tendermint/config
 cp -f config.toml.in config.toml
-sed -e s/@moniker@/$MONIKER"1"/ -i.tmp config.toml
+sed -e s/@moniker@/$MONIKER"_sub"/ -i.tmp config.toml
 if [ -z "$SEEDS" ]; then
-	SEEDS=$ID@amod0:26656
+	SEEDS=$ID@192.167.10.2:26656
 else
-	SEEDS=$SEEDS,$ID@amod0:26656
+	SEEDS=$SEEDS,$ID@192.167.10.2:26656
 fi
 sed -e s/@seeds@/$SEEDS/ -i.tmp config.toml
 
@@ -44,8 +44,9 @@ cp -f testnet_190415/genesis.json $DATAROOT/amod1/tendermint/config/
 
 #### docker-compose.yml
 cp -f docker-compose.yml.in docker-compose.yml
-SUB=${DATAROOT//\//\\/}
-sed -e s/@dataroot@/$SUB/ -i.tmp docker-compose.yml
+DATAROOTSUB=${DATAROOT//\//\\/}
+sed -e s/@dataroot@/$DATAROOTSUB/ -i.tmp docker-compose.yml
+sed -e s/@moniker@/$MONIKER/ -i.tmp docker-compose.yml
 
 rm -f *.tmp
 

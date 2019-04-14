@@ -4,6 +4,8 @@ services:
   amod0:
     container_name: amod0
     image: amolabs/amod
+    environment:
+      - MONIKER=@moniker@
     networks:
       amonet:
         ipv4_address: 192.167.10.2
@@ -11,19 +13,23 @@ services:
       - @dataroot@/amod0/tendermint:/tendermint:Z
       - @dataroot@/amod0/amo:/amo:Z
     ports:
-      - "26656-26657:26656-26657"
+      - "26656:26656"
 
   amod1:
     depends_on:
       - amod0
     container_name: amod1
     image: amolabs/amod
+    environment:
+      - MONIKER=@moniker@_sub
     networks:
       amonet:
         ipv4_address: 192.167.10.3
     volumes:
       - @dataroot@/amod1/tendermint:/tendermint:Z
       - @dataroot@/amod1/amo:/amo:Z
+    ports:
+      - "26657:26657"
 
   #pdb0:
   #container_name: pdb0
@@ -36,14 +42,16 @@ services:
   #ports:
   #- "26656:26659"
 
-  proxy:
-    container_name: rpcproxy
-    image: amolabs/rpcproxy
-    networks:
-      amonet:
-        ipv4_address: 192.167.10.5
-    ports:
-      - "80:80"
+  #proxy:
+  #depends_on:
+  #- amod1
+  #container_name: rpcproxy
+  #image: amolabs/rpcproxy
+  #networks:
+  #amonet:
+  #ipv4_address: 192.167.10.5
+  #ports:
+  #- "80:80"
 
 networks:
   amonet:

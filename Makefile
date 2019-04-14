@@ -35,3 +35,6 @@ save:
 load:
 	zcat amod.tgz | docker image load
 	zcat rpcproxy.tgz | docker image load
+
+clean:
+	rm -f tendermint amod *.tgz docker-compose.yml
