@@ -1,5 +1,5 @@
 {
-  "genesis_time": "2019-04-10T12:10:17.836438Z",
+  "genesis_time": "2019-04-15T03:00:00.000000Z",
   "chain_id": "amo-testnet-190415",
   "consensus_params": {
     "block_size": {
