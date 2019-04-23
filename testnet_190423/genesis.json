@@ -27,22 +27,21 @@
     }
   ],
   "app_state": {
-    "balances": [],
+    "balances": [
+      {
+        "owner": "72CD97D0A4CF8C5EC4B579715FE4FC88D31DB39A",
+        "amount": "100000000000000000000"
+      },
+      {
+        "owner": "947238C78B1F3C70174534280C295164BA17100A",
+        "amount": "100000000000000000000"
+      }
+    ],
     "stakes": [
       {
         "holder": "51AD2903CEDA052D584E289E9F6B7C2F9601165A",
         "amount": "100000000000000000000",
         "validator": "Ap8YFoIIsjq4kD/kHjvyTkME1qn7IZqEk8r8tKArE/E="
-      },
-      {
-        "holder": "72CD97D0A4CF8C5EC4B579715FE4FC88D31DB39A",
-        "amount": "100000000000000000000",
-        "validator": "IHWotSa+EwHrpvTHRyeaZiFg8jgHefnQPc8zAi2wsPI="
-      },
-      {
-        "holder": "947238C78B1F3C70174534280C295164BA17100A",
-        "amount": "100000000000000000000",
-        "validator": "Go79LN0ZuohOTaU8cz+WDBiEWEbQm1o5D3+PgmbVfEQ="
       }
     ]
   },
