@@ -7,7 +7,7 @@ all: amod-iamge rpcproxy-image
 
 tendermint:
 	-git clone https://github.com/tendermint/tendermint $(TMPATH)
-	cd $(TMPATH); git checkout v0.29.2
+	cd $(TMPATH); git checkout v0.31.5
 	make -C $(TMPATH) get_tools
 	make -C $(TMPATH) get_vendor_deps
 	make -C $(TMPATH) build-linux
