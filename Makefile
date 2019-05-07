@@ -3,7 +3,7 @@
 TMPATH=$(GOPATH)/src/github.com/tendermint/tendermint
 AMOPATH=$(GOPATH)/src/github.com/amolabs/amoabci
 
-all: amod-iamge rpcproxy-image
+all: amod-iamge
 
 tendermint:
 	-git clone https://github.com/tendermint/tendermint $(TMPATH)
@@ -25,16 +25,11 @@ amod-iamge: tendermint amod
 	cp -f tendermint amod DOCKER_amod/
 	docker build -t amolabs/amod DOCKER_amod
 
-rpcproxy-image:
-	docker build -t amolabs/rpcproxy DOCKER_rpcproxy
-
 save:
 	docker image save amolabs/amod | gzip > amod.tgz
-	docker image save amolabs/rpcproxy | gzip > rpcproxy.tgz
 
 load:
 	zcat amod.tgz | docker image load
-	zcat rpcproxy.tgz | docker image load
 
 clean:
 	rm -f tendermint amod *.tgz docker-compose.yml
