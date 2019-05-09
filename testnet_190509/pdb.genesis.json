@@ -1,0 +1,30 @@
+{
+  "genesis_time": "2019-05-09T01:35:33.2243709Z",
+  "chain_id": "amo-testnet-190509",
+  "consensus_params": {
+    "block_size": {
+      "max_bytes": "22020096",
+      "max_gas": "-1"
+    },
+    "evidence": {
+      "max_age": "100000"
+    },
+    "validator": {
+      "pub_key_types": [
+        "ed25519"
+      ]
+    }
+  },
+  "validators": [
+    {
+      "address": "7D0C05E078C510E03506229B87FD28F371235A5D",
+      "pub_key": {
+        "type": "tendermint/PubKeyEd25519",
+        "value": "hqgcwFU6bDwBQ2+yixMkPD3N9ScPpU0kMUszJ3G+fCs="
+      },
+      "power": "10",
+      "name": ""
+    }
+  ],
+  "app_hash": ""
+}

@@ -1,4 +1,4 @@
-.PHONY: save load
+.PHONY: save push load
 
 TMPATH=$(GOPATH)/src/github.com/tendermint/tendermint
 AMOPATH=$(GOPATH)/src/github.com/amolabs/amoabci
@@ -27,9 +27,16 @@ amod-iamge: tendermint amod
 
 save:
 	docker image save amolabs/amod | gzip > amod.tgz
+	docker image save paust-db | gzip > pdb.tgz
+
+push: save
+	scp amod.tgz pdb.tgz root@amo-tokyo:testnet/
+	scp amod.tgz pdb.tgz root@amo-dallas:testnet/
+	scp amod.tgz pdb.tgz root@amo-frank:testnet/
 
 load:
 	zcat amod.tgz | docker image load
+	zcat pdb.tgz | docker image load
 
 clean:
 	rm -f tendermint amod *.tgz docker-compose.yml

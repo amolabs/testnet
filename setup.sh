@@ -3,13 +3,15 @@
 DATAROOT=$1
 MONIKER=$2
 SEEDS=$3
+PDB_SEEDS=$4
 
 echo "data root = $DATAROOT"
 echo "moniker = $MONIKER"
 echo "seeds = $SEEDS"
+echo "pdb seeds = $PDB_SEEDS"
 
-if [ $# != 3 ]; then
-	echo "syntax: setup.sh <data_root> <moniker> <seeds_string>"
+if [ $# != 4 ]; then
+	echo "syntax: setup.sh <data_root> <moniker> <seeds> <pdb_seeds>"
 	exit
 fi
 
@@ -21,11 +23,11 @@ sed -e s/@moniker@/$MONIKER/ -i.tmp config.toml
 sed -e s/@seeds@/$SEEDS/ -i.tmp config.toml
 
 mv -f config.toml $DATAROOT/amod0/tendermint/config/
-cp -f testnet_190423/genesis.json $DATAROOT/amod0/tendermint/config/
+cp -f testnet_190509/genesis.json $DATAROOT/amod0/tendermint/config/
 
 docker run -it --rm -v $DATAROOT/amod0/tendermint:/tendermint:Z amolabs/amod /usr/bin/tendermint --home /tendermint init
-ID=$(docker run -it --rm -v $DATAROOT/amod0/tendermint:/tendermint:Z amolabs/amod /usr/bin/tendermint --home /tendermint show_node_id)
-ID=${ID//}
+NODEID=$(docker run -it --rm -v $DATAROOT/amod0/tendermint:/tendermint:Z amolabs/amod /usr/bin/tendermint --home /tendermint show_node_id)
+NODEID=${NODEID//}
 
 #### amod1
 mkdir -p $DATAROOT/amod1/amo
@@ -33,14 +35,23 @@ mkdir -p $DATAROOT/amod1/tendermint/config
 cp -f config.toml.in config.toml
 sed -e s/@moniker@/$MONIKER"_sub"/ -i.tmp config.toml
 if [ -z "$SEEDS" ]; then
-	SEEDS=$ID@192.167.10.2:26656
+	SEEDS=$NODEID@192.167.10.2:26656
 else
-	SEEDS=$SEEDS,$ID@192.167.10.2:26656
+	SEEDS=$SEEDS,$NODEID@192.167.10.2:26656
 fi
 sed -e s/@seeds@/$SEEDS/ -i.tmp config.toml
 
 mv -f config.toml $DATAROOT/amod1/tendermint/config/config.toml
-cp -f testnet_190423/genesis.json $DATAROOT/amod1/tendermint/config/
+cp -f testnet_190509/genesis.json $DATAROOT/amod1/tendermint/config/
+
+#### pdb0
+mkdir -p $DATAROOT/pdb0/node0/config
+cp -f pdb.config.toml.in pdb.config.toml
+sed -e s/@moniker@/$MONIKER/ -i.tmp pdb.config.toml
+sed -e s/@seeds@/$PDB_SEEDS/ -i.tmp pdb.config.toml
+
+mv -f pdb.config.toml $DATAROOT/pdb0/node0/config/config.toml
+cp -f testnet_190509/pdb.genesis.json $DATAROOT/pdb0/node0/config/genesis.json
 
 #### docker-compose.yml
 cp -f docker-compose.yml.in docker-compose.yml

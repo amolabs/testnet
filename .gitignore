@@ -4,8 +4,7 @@
 # binary output
 /amod
 /tendermint
-amod.tgz
-rpcproxy.tgz
+*.tgz
 docker-compose.yml
 DOCKER*/amod
 DOCKER*/tendermint

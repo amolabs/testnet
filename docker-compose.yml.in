@@ -31,16 +31,18 @@ services:
     ports:
       - "26657:26657"
 
-  #pdb0:
-  #container_name: pdb0
-  #image: paust-db
-  #networks:
-  #amonet:
-  #ipv4_address: 192.167.10.4
-  #volumes:
-  #- /tmp/pdb0:/tendermint:Z
-  #ports:
-  #- "26656:26659"
+  pdb0:
+    container_name: pdb0
+    image: paust-db
+    environment:
+      - MONIKER=@moniker@
+    networks:
+      amonet:
+        ipv4_address: 192.167.10.100
+    volumes:
+      - @dataroot@/pdb0:/tendermint:Z
+    ports:
+      - "26659-26660:26656-26657"
 
   #proxy:
   #depends_on:
