@@ -64,6 +64,8 @@ sed -e s/@seeds@/$PDB_SEEDS/ -i.tmp pdb.config.toml
 mv -f pdb.config.toml $DATAROOT/pdb0/node0/config/config.toml
 cp -f testnet_190509/pdb.genesis.json $DATAROOT/pdb0/node0/config/genesis.json
 
+docker run -it --rm -v $DATAROOT/pdb0:/tendermint:Z paust-db init
+
 #### docker-compose.yml
 cp -f docker-compose.yml.in docker-compose.yml
 DATAROOTSUB=${DATAROOT//\//\\/}
