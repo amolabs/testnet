@@ -5,6 +5,7 @@
 /amod
 /tendermint
 *.tgz
+*_key.json
 docker-compose.yml
 DOCKER*/amod
 DOCKER*/tendermint

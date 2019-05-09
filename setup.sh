@@ -18,12 +18,23 @@ fi
 #### amod0
 mkdir -p $DATAROOT/amod0/amo
 mkdir -p $DATAROOT/amod0/tendermint/config
+mkdir -p $DATAROOT/amod0/tendermint/data
 cp -f config.toml.in config.toml
 sed -e s/@moniker@/$MONIKER/ -i.tmp config.toml
 sed -e s/@seeds@/$SEEDS/ -i.tmp config.toml
 
 mv -f config.toml $DATAROOT/amod0/tendermint/config/
 cp -f testnet_190509/genesis.json $DATAROOT/amod0/tendermint/config/
+
+if [ -f node_key.json ]; then
+	cp -f node_key.json $DATAROOT/amod0/tendermint/config/
+fi
+if [ -f priv_validator_key.json ]; then
+	cp -f priv_validator_key.json $DATAROOT/amod0/tendermint/config/
+fi
+if [ ! -f $DATAROOT/amod0/tendermint/data/priv_validator_state.json ]; then
+	cp priv_validator_state.json $DATAROOT/amod0/tendermint/data/
+fi
 
 docker run -it --rm -v $DATAROOT/amod0/tendermint:/tendermint:Z amolabs/amod /usr/bin/tendermint --home /tendermint init
 NODEID=$(docker run -it --rm -v $DATAROOT/amod0/tendermint:/tendermint:Z amolabs/amod /usr/bin/tendermint --home /tendermint show_node_id)

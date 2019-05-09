@@ -25,7 +25,7 @@ amod-iamge: tendermint amod
 	cp -f tendermint amod DOCKER_amod/
 	docker build -t amolabs/amod DOCKER_amod
 
-save:
+save: amod-image
 	docker image save amolabs/amod | gzip > amod.tgz
 	docker image save paust-db | gzip > pdb.tgz
 
