@@ -44,16 +44,6 @@ services:
     ports:
       - "26659-26660:26656-26657"
 
-  #proxy:
-  #depends_on:
-  #- amod1
-  #container_name: rpcproxy
-  #image: amolabs/rpcproxy
-  #networks:
-  #amonet:
-  #ipv4_address: 192.167.10.5
-  #ports:
-  #- "80:80"
 
 networks:
   amonet:
