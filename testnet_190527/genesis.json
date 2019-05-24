@@ -1,0 +1,56 @@
+{
+  "genesis_time": "2019-05-27T04:00:00.000000Z",
+  "chain_id": "amo-testnet-190527",
+  "consensus_params": {
+    "block": {
+      "max_bytes": "22020096",
+      "max_gas": "-1",
+      "time_iota_ms": "1000"
+    },
+    "evidence": {
+      "max_age": "100000"
+    },
+    "validator": {
+      "pub_key_types": [
+        "ed25519"
+      ]
+    }
+  },
+  "validators": [
+    {
+      "address": "374F91DF66EC65067BA172EEB26A121C65E14DD3",
+      "pub_key": {
+        "type": "tendermint/PubKeyEd25519",
+        "value": "Ap8YFoIIsjq4kD/kHjvyTkME1qn7IZqEk8r8tKArE/E="
+      },
+      "power": "10",
+      "name": ""
+    }
+  ],
+  "app_state": {
+    "balances": [
+      {
+        "owner": "BEFF22606A9FB730455736E7B33C846171F2865C",
+        "amount": "100000000000000000000"
+      }
+    ],
+    "stakes": [
+      {
+        "holder": "51AD2903CEDA052D584E289E9F6B7C2F9601165A",
+        "amount": "100000000000000000000",
+        "validator": "Ap8YFoIIsjq4kD/kHjvyTkME1qn7IZqEk8r8tKArE/E="
+      },
+      {
+        "holder": "72CD97D0A4CF8C5EC4B579715FE4FC88D31DB39A",
+        "amount": "100000000000000000000",
+        "validator": "IHWotSa+EwHrpvTHRyeaZiFg8jgHefnQPc8zAi2wsPI="
+      },
+      {
+        "holder": "947238C78B1F3C70174534280C295164BA17100A",
+        "amount": "100000000000000000000",
+        "validator": "Go79LN0ZuohOTaU8cz+WDBiEWEbQm1o5D3+PgmbVfEQ="
+      }
+    ]
+  },
+  "app_hash": ""
+}
