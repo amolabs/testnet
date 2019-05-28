@@ -1,4 +1,4 @@
-.PHONY: save push load
+.PHONY: amod-image save push load
 
 TMPATH=$(GOPATH)/src/github.com/tendermint/tendermint
 AMOPATH=$(GOPATH)/src/github.com/amolabs/amoabci
