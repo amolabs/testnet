@@ -21,22 +21,20 @@ amod:
 	make -C $(AMOPATH) TARGET=linux build
 	cp $(AMOPATH)/amod ./
 
-amod-iamge: tendermint amod
+amod-image: tendermint amod
 	cp -f tendermint amod DOCKER_amod/
 	docker build -t amolabs/amod DOCKER_amod
 
 save: amod-image
 	docker image save amolabs/amod | gzip > amod.tgz
-	docker image save paust-db | gzip > pdb.tgz
 
 push: save
-	scp amod.tgz pdb.tgz root@amo-tokyo:testnet/
-	scp amod.tgz pdb.tgz root@amo-dallas:testnet/
-	scp amod.tgz pdb.tgz root@amo-frank:testnet/
+	scp amod.tgz root@amo-tokyo:testnet/
+	scp amod.tgz root@amo-dallas:testnet/
+	scp amod.tgz root@amo-frank:testnet/
 
 load:
 	zcat amod.tgz | docker image load
-	zcat pdb.tgz | docker image load
 
 clean:
 	rm -f tendermint amod *.tgz docker-compose.yml
