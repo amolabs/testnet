@@ -22,7 +22,7 @@ sed -e s/@moniker@/$MONIKER/ -i.tmp config.toml
 sed -e s/@seeds@/$SEEDS/ -i.tmp config.toml
 
 mv -f config.toml $DATAROOT/amod0/tendermint/config/
-cp -f testnet_190527/genesis.json $DATAROOT/amod0/tendermint/config/
+cp -f testnet_190617/genesis.json $DATAROOT/amod0/tendermint/config/
 
 if [ -f node_key.json ]; then
 	cp -f node_key.json $DATAROOT/amod0/tendermint/config/
@@ -51,7 +51,7 @@ fi
 sed -e s/@seeds@/$SEEDS/ -i.tmp config.toml
 
 mv -f config.toml $DATAROOT/amod1/tendermint/config/config.toml
-cp -f testnet_190527/genesis.json $DATAROOT/amod1/tendermint/config/
+cp -f testnet_190617/genesis.json $DATAROOT/amod1/tendermint/config/
 
 #### docker-compose.yml
 cp -f docker-compose.yml.in docker-compose.yml
