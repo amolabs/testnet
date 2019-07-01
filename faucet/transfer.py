@@ -4,6 +4,8 @@ import sqlite3
 import subprocess
 import json
 
+rpcserver = '139.162.116.176:26657'
+
 # expected schema
 #`recp (
 #	id integer primary key,
@@ -17,12 +19,14 @@ conn.row_factory = sqlite3.Row
 c = conn.cursor()
 
 c.execute("select * from recp where transfer_time is null order by id limit 10")
-print c.rowcount
 
-for row in c.fetchall():
+rows = c.fetchall();
+print 'totol rows:', len(rows);
+
+for row in rows:
     print 'processing: {} ...'.format(row['address']),
-    cmd = 'amocli {} --user faucet tx transfer {} 1000'\
-            .format('', row['address'])
+    cmd = 'amocli --rpc {} --user faucet tx transfer {} 1000'\
+            .format(rpcserver, row['address'])
     out = subprocess.check_output(cmd, shell=True)
     res = json.loads(out)
     if res['height'] > 0:
@@ -33,6 +37,7 @@ for row in c.fetchall():
         print 'done'
     else:
         print 'error'
+        print res
 
 conn.commit()
 conn.close()
