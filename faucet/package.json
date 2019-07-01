@@ -1,0 +1,15 @@
+{
+  "name": "faucet",
+  "version": "1.0.0",
+  "description": "AMO faucet server for testnet",
+  "main": "recorder.js",
+  "dependencies": {
+    "sqlite3": "^4.0.9"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
