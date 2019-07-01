@@ -13,6 +13,11 @@ const schema = `recp (
 	address text unique
 )`;
 
+const headers = {
+	'Access-Control-Allow-Origin': '*',
+	'Access-Control-Allow-Headers': '*',
+};
+
 var server = http.createServer((req, res) => {
 	if (req.method == 'POST') {
 		var postData = '';
@@ -23,35 +28,52 @@ var server = http.createServer((req, res) => {
 		req.on('end', function () {
 			var item = JSON.parse(postData);
 			if (item.recp) {
-				db.run(`insert into recp (request_time, address) values (
-						DATETIME('now','localtime'),
-						'${item.recp}'
-					)`,
-					(err) => {
-					if (err) console.error(err.message);
-				});
-
-				res.writeHeader(200, {
-					'Access-Control-Allow-Origin': '*',
-					'Access-Control-Allow-Headers': '*',
-				});
-				res.end('Recipient ' + item.recp + ' has been recorded.');
+				db.get(`select * from recp where address = ?`,
+					item.recp,
+					function (err, row) {
+						if (err) {
+							console.error(err.message);
+						} else if (row) {
+							console.error('address already requested:', item.recp);
+							res.writeHeader(409, headers);
+							res.end(`Recipient ${item.recp} has been already requested.`);
+						} else {
+							// No previous request. OK to go.
+							db.run(`insert into recp (request_time, address) values (
+									DATETIME('now','localtime'), ?
+								)`,
+								item.recp,
+								function (err) {
+									if (err) {
+										console.error(err.message);
+										res.writeHeader(500, headers);
+										res.end('Internal error:', err.message);
+									} else {
+										res.writeHeader(200, headers);
+										res.end(`Recipient ${item.recp} has been recorded.`);
+									}
+								});
+						}
+					});
 			} else {
-				res.writeHeader(400, {
-					'Access-Control-Allow-Origin': '*',
-					'Access-Control-Allow-Headers': '*',
-				});
+				res.writeHeader(400, headers);
 				res.end('Unable to read recipient info.');
 			}
 		});
-	} else {
+	} else if (req.method == 'OPTIONS') {
 		req.on('data', function (chunk) {
+			// TODO
 		});
 		req.on('end', function () {
-			res.writeHeader(200, {
-				'Access-Control-Allow-Origin': '*',
-				'Access-Control-Allow-Headers': '*',
-			});
+			res.writeHeader(200, headers);
+			res.end();
+		});
+	} else {
+		req.on('data', function (chunk) {
+			// TODO
+		});
+		req.on('end', function () {
+			res.writeHeader(405, headers);
 			res.end();
 		});
 	}
@@ -72,9 +94,9 @@ db = new sqlite3.Database(dbpath, (err) => {
 		console.log('DB connected on', dbpath);
 		db.run(`create table ${schema}`, (err) => {
 			if (err) console.error(err.message);
-		});
-		server.listen(2000, function () {
-			console.log('Faucet request recorder started.');
+			server.listen(2000, function () {
+				console.log('Faucet request recorder started.');
+			});
 		});
 	}
 });
