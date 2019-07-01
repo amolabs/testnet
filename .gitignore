@@ -9,3 +9,7 @@
 docker-compose.yml
 DOCKER*/amod
 DOCKER*/tendermint
+
+# faucet
+/faucet/node_modules
+/faucet/db
