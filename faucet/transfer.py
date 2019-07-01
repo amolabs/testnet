@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
+import os
 import sqlite3
 import subprocess
 import json
@@ -14,7 +15,8 @@ rpcserver = '139.162.116.176:26657'
 #	address text unique
 #)`;
 
-conn = sqlite3.connect('./db/faucet.db')
+cwd = os.path.dirname(os.path.abspath(__file__))
+conn = sqlite3.connect(cwd+'/db/faucet.db')
 conn.row_factory = sqlite3.Row
 c = conn.cursor()
 
