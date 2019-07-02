@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
+# vim: set expandtab :
 import os
 import sqlite3
-import subprocess
+import shlex, subprocess
 import json
 
 rpcserver = '139.162.116.176:26657'
@@ -27,9 +28,20 @@ print 'totol rows:', len(rows);
 
 for row in rows:
     print 'processing: {} ...'.format(row['address']),
-    cmd = 'amocli --rpc {} --user faucet tx transfer {} 1000'\
-            .format(rpcserver, row['address'])
-    out = subprocess.check_output(cmd, shell=True)
+    cmd = 'amocli --rpc {} --user faucet tx transfer {} 10000'.format(
+            rpcserver,
+            row['address'],
+            )
+    args = shlex.split(cmd)
+
+    #out = subprocess.check_output(cmd, shell=True)
+    envPath = os.getenv('PATH')
+    p = subprocess.Popen(args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            env={'PATH':envPath}
+            )
+    out, err = p.communicate()
     res = json.loads(out)
     if res['height'] > 0:
         c.execute(
