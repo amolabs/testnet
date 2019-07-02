@@ -13,3 +13,4 @@ DOCKER*/tendermint
 # faucet
 /faucet/node_modules
 /faucet/db
+/faucet/transfer.log
