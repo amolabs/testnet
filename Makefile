@@ -7,7 +7,7 @@ all: amod-iamge
 
 tendermint:
 	-git clone https://github.com/tendermint/tendermint $(TMPATH)
-	cd $(TMPATH); git checkout v0.31.5
+	cd $(TMPATH); git checkout v0.31.7
 	make -C $(TMPATH) get_tools
 	make -C $(TMPATH) get_vendor_deps
 	make -C $(TMPATH) build-linux
@@ -15,7 +15,7 @@ tendermint:
 
 amod:
 	-git clone https://github.com/amolabs/amoabci $(AMOPATH)
-	cd $(AMOPATH); git checkout v1.0-beta1
+	cd $(AMOPATH); git checkout v1.0-rc1
 	make -C $(AMOPATH) get_tools
 	make -C $(AMOPATH) get_vendor_deps
 	make -C $(AMOPATH) TARGET=linux build
