@@ -14,8 +14,8 @@ const schema = `recp (
 )`;
 
 const headers = {
-	'Access-Control-Allow-Origin': '*',
 	'Access-Control-Allow-Headers': '*',
+	'Access-Control-Allow-Origin': '*',
 };
 
 var server = http.createServer((req, res) => {
@@ -82,7 +82,7 @@ var server = http.createServer((req, res) => {
 fs.mkdir(dbdir, {recursive: true}, (err) => {
 	if (err) {
 		console.error(err.message);
-		process.exit(1);
+		//process.exit(1);
 	}
 });
 
