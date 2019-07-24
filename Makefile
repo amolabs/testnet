@@ -29,9 +29,13 @@ save: amod-image
 	docker image save amolabs/amod | gzip > amod.tgz
 
 push: save
+	scp amod.tgz root@amo-seed:testnet/
 	scp amod.tgz root@amo-tokyo:testnet/
+	scp amod.tgz root@amo-tokyo2:testnet/
 	scp amod.tgz root@amo-dallas:testnet/
+	scp amod.tgz root@amo-dallas2:testnet/
 	scp amod.tgz root@amo-frank:testnet/
+	scp amod.tgz root@amo-frank2:testnet/
 
 load:
 	zcat amod.tgz | docker image load
