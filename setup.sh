@@ -22,7 +22,6 @@ sed -e s/@moniker@/$MONIKER/ -i.tmp config.toml
 sed -e s/@seeds@/$SEEDS/ -i.tmp config.toml
 if [ "$MONIKER" == "seed" ]; then
 	sed -e s/seed_mode\.*$/seed_mode\ =\ true/ -i.tmp config.toml
-	sed -e s/2665/2666/ -i.tmp config.toml
 fi
 
 mv -f config.toml $DATAROOT/tendermint/config/
