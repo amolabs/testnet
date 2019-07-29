@@ -95,7 +95,7 @@ db = new sqlite3.Database(dbpath, (err) => {
 		console.log('DB connected on', dbpath);
 		db.run(`create table ${schema}`, (err) => {
 			if (err) console.error(err.message);
-			server.listen(2000, function () {
+			server.listen(20000, function () {
 				console.log('Faucet request recorder started.');
 			});
 		});
