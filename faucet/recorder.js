@@ -13,7 +13,7 @@ const schema = `recp (
 	address text unique
 )`;
 
-const headers = {
+const corsHeaders = {
 	'Access-Control-Allow-Headers': '*',
 	'Access-Control-Allow-Origin': '*',
 };
@@ -35,7 +35,7 @@ var server = http.createServer((req, res) => {
 							console.error(err.message);
 						} else if (row) {
 							console.error('address already requested:', item.recp);
-							res.writeHeader(409, headers);
+							res.writeHeader(409, corsHeaders);
 							res.end(`Recipient ${item.recp} has been already requested.`);
 						} else {
 							// No previous request. OK to go.
@@ -46,17 +46,18 @@ var server = http.createServer((req, res) => {
 								function (err) {
 									if (err) {
 										console.error(err.message);
-										res.writeHeader(500, headers);
+										res.writeHeader(500, corsHeaders);
 										res.end('Internal error:', err.message);
 									} else {
-										res.writeHeader(200, headers);
+										console.log('recp', item.recp, 'recorded');
+										res.writeHeader(200, corsHeaders);
 										res.end(`Recipient ${item.recp} has been recorded.`);
 									}
 								});
 						}
 					});
 			} else {
-				res.writeHeader(400, headers);
+				res.writeHeader(400, corsHeaders);
 				res.end('Unable to read recipient info.');
 			}
 		});
@@ -65,7 +66,7 @@ var server = http.createServer((req, res) => {
 			// TODO
 		});
 		req.on('end', function () {
-			res.writeHeader(200, headers);
+			res.writeHeader(200, corsHeaders);
 			res.end();
 		});
 	} else {
@@ -73,7 +74,7 @@ var server = http.createServer((req, res) => {
 			// TODO
 		});
 		req.on('end', function () {
-			res.writeHeader(405, headers);
+			res.writeHeader(405, corsHeaders);
 			res.end();
 		});
 	}
