@@ -24,11 +24,12 @@ c = conn.cursor()
 c.execute("select * from recp where transfer_time is null order by id limit 10")
 
 rows = c.fetchall();
-print 'totol rows:', len(rows);
+if len(rows) > 0:
+    print 'totol rows:', len(rows);
 
 for row in rows:
     print 'processing: {} ...'.format(row['address']),
-    cmd = 'amocli --rpc {} --user faucet tx transfer {} 10000'.format(
+    cmd = 'amocli --rpc {} --json --user faucet tx transfer {} 10000'.format(
             rpcserver,
             row['address'],
             )
