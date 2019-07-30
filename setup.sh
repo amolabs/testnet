@@ -1,17 +1,20 @@
 #!/bin/bash
 
+if [ $# != 3 ]; then
+	echo "syntax: setup.sh <data_root> <moniker> <peers>"
+	exit
+fi
+
 DATAROOT=$1
 MONIKER=$2
-SEEDS=$3
+PEERS=$3
 
 echo "data root = $DATAROOT"
 echo "moniker = $MONIKER"
-echo "seeds = $SEEDS"
-
-if [ $# != 3 ]; then
-	echo "syntax: setup.sh <data_root> <moniker> <seeds>"
-	exit
-fi
+echo "peers = $PEERS"
+iface=$(route -n | grep '^0.0.0.0' | awk '{print $8}')
+extaddr=$(ip -f inet a show dev $iface | grep '\<inet\>' | head -1 | awk '{print $2}' | awk -F'/' '{print $1}')
+echo "extaddr = $extaddr"
 
 #### amod0
 mkdir -p $DATAROOT/amo
@@ -19,10 +22,8 @@ mkdir -p $DATAROOT/tendermint/config
 mkdir -p $DATAROOT/tendermint/data
 cp -f config.toml.in config.toml
 sed -e s/@moniker@/$MONIKER/ -i.tmp config.toml
-sed -e s/@seeds@/$SEEDS/ -i.tmp config.toml
-if [ "$MONIKER" == "seed" ]; then
-	sed -e s/seed_mode\.*$/seed_mode\ =\ true/ -i.tmp config.toml
-fi
+sed -e s/@peers@/$PEERS/ -i.tmp config.toml
+sed -e s/@external@/tcp:\\/\\/$extaddr:26656/ -i.tmp config.toml
 
 mv -f config.toml $DATAROOT/tendermint/config/
 cp -f testnet_190724/genesis.json $DATAROOT/tendermint/config/
