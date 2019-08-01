@@ -15,7 +15,7 @@ tendermint:
 
 amod:
 	-git clone https://github.com/amolabs/amoabci $(AMOPATH)
-	cd $(AMOPATH); git checkout v1.0-rc1
+	cd $(AMOPATH); git checkout v1.0
 	make -C $(AMOPATH) get_tools
 	make -C $(AMOPATH) get_vendor_deps
 	make -C $(AMOPATH) TARGET=linux build
