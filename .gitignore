@@ -8,3 +8,6 @@
 /faucet/node_modules
 /faucet/db
 /faucet/transfer.log
+
+# ctags
+tags
