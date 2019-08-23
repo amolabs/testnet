@@ -15,8 +15,8 @@ This script helps to prepare data directory and configuration files.
   descriptive name.
 - `<peers>` is a list of peers separated by comma. A peer address has form of
   `node_id@ip_address_or_hostname:p2p_port`. `node_id` can be obtained by
-  querying `http://ip_address_or_hostname:26657/status`. Default `p2p_port` is
-  26656.
+  querying `http://ip_address_or_hostname:26657/status` using tools such as
+  `curl`. Default `p2p_port` is 26656.
 
 Recent AMO testnet has a seed node running on 172.104.88.12. It is recommended
 to use this node if you have no knowledge of any other nodes. 
@@ -28,7 +28,7 @@ of `<data_root>`.
 ```bash
 ./run.sh <data_root>
 ```
-Since the script will run the container in detached mode. You can see the logs
+Since the script will run the container in detached mode, you can see the logs
 from the container as follows:
 ```bash
 docker logs -f <node_name>`
