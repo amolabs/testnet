@@ -29,7 +29,7 @@ if len(rows) > 0:
 
 for row in rows:
     print 'processing: {} ...'.format(row['address']),
-    cmd = 'amocli --rpc {} --json --user faucet tx transfer {} 10000'.format(
+    cmd = 'amocli --rpc {} --json --user faucet tx transfer {} 1000000000000000000'.format(
             rpcserver,
             row['address'],
             )
