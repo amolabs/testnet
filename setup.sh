@@ -36,7 +36,7 @@ else
 fi
 
 mv -f config.toml $DATAROOT/tendermint/config/
-cp -f testnet_190724/genesis.json $DATAROOT/tendermint/config/
+cp -f testnet_190823/genesis.json $DATAROOT/tendermint/config/
 
 if [ -f node_key.json ]; then
 	cp -f node_key.json $DATAROOT/tendermint/config/
