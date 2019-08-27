@@ -9,5 +9,8 @@
 /faucet/db
 /faucet/transfer.log
 
+# orchestration config files
+/orchestration/config
+
 # ctags
 tags
