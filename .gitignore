@@ -2,7 +2,7 @@
 .*.sw*
 
 # binary output
-*_key.json
+/*_key.json
 
 # faucet
 /faucet/node_modules
