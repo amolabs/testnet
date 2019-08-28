@@ -48,8 +48,8 @@ mkdir -p $DATAROOT/tendermint/data
 cp -f config.toml.in config.toml
 sed -e s/@moniker@/$MONIKER/ -i.tmp config.toml
 sed -e s/@peers@/$PEERS/ -i.tmp config.toml
-if [ ! -z "$extaddr" ]; then
-	sed -e s/@external@/tcp:\\/\\/$extaddr:26656/ -i.tmp config.toml
+if [ ! -z "$EXTADDR" ]; then
+	sed -e s/@external@/tcp:\\/\\/$EXTADDR:26656/ -i.tmp config.toml
 else
 	sed -e s/@external@// -i.tmp config.toml
 fi
