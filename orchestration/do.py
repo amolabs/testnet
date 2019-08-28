@@ -252,14 +252,11 @@ def ssh_connect(ssh, hostname, username):
 def main():
     # get data from json file:
     with open(NODE_FILE) as file:
-        data = json.load(file)
+        nodes = json.load(file)
 
     # prepare ssh module
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    # get nodes info from json data
-    nodes = data["nodes"]
 
     cmd = sys.argv[1]
     
