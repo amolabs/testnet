@@ -1,15 +1,17 @@
 #!/usr/local/bin/python3
 
 import os
+import sys
 import time
 import subprocess
 import json
 
 import paramiko
 
-NODE_FILE = "nodes.json"
+CURRENT_PATH = os.getcwd()
+NODE_FILE = CURRENT_PATH + "/orchestration/nodes.json"
 
-SSH_USERNAME = "monsieur.ahn"
+SSH_USERNAME = ""
 SSH_PRIVKEY_PATH = os.environ["HOME"] + "/.ssh/id_rsa"
 
 SLEEP_TIME = 10 
@@ -27,34 +29,27 @@ def main():
     nodes = data["nodes"]
 
     target = "val1"
-    print("killing %s node" % (target))
     docker_stop(ssh, nodes, target)
     del nodes[target]
 
     target = "seed"
-    print("killing %s node" % (target))
     docker_stop(ssh, nodes, target)
     del nodes[target]
 
     for target in list(nodes.keys()):        
-        print("killing %s node" % (target))
         docker_stop(ssh, nodes, target)
     
 def docker_stop(ssh, nodes, target):
     try:
-        ssh = ssh_connect(ssh, nodes[target]["ip_addr"])
+        target_ip = nodes[target]["ip_addr"]
+
+        print("[%s] connecting to %s" % (target, target_ip))
+        ssh = ssh_connect(ssh, target_ip)
+        print("[%s] connected to %s" % (target, target_ip))
+
         print("[%s] stop docker container" % (target))
         command = "sudo docker stop %s" % (target)
         ssh_exec(ssh, command)
-
-        #print("[%s] sleep %d seconds" % (target, SLEEP_TIME))
-        #time.sleep(SLEEP_TIME)
-
-        #print("[%s] check status" % (target))
-        #command = "sudo docker inspect " + target
-        #stdin, stdout, stderr = ssh_exec(ssh, command)
-
-        #if not stderr.read(): raise Exception("container is not properly stopped")
 
     except Exception as err:
         print("[%s] %s" % (target, err))
@@ -66,21 +61,32 @@ def docker_stop(ssh, nodes, target):
 
 def ssh_exec(ssh, command):
     try:
-        return ssh.exec_command(command)
-    except Exception as error:
-        print(error)
+        stdin, stdout, stderr = ssh.exec_command(command)
+
+        if stdout.channel.recv_exit_status(): 
+            raise Exception("couldn't execute: %s" % (command))
+
+    except Exception as err:
+        print(err)
         exit(1)
 
 def ssh_connect(ssh, hostname):
-    print("connecting to " + hostname)
     try:
         ssh.connect(hostname, username=SSH_USERNAME, key_filename=SSH_PRIVKEY_PATH)
     except Exception as error:
         print(error)
         exit(1)
 
-    print("connected to " + hostname) 
     return ssh
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 %s <ssh_username> <ssh_privkey_path>(optional)" % (sys.argv[0]))
+        exit(1)
+    
+    if len(sys.argv) == 3:
+        SSH_PRIVKEY_PATH = sys.argv[2]
+
+    SSH_USERNAME = sys.argv[1]
+
     main()

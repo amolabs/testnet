@@ -1,15 +1,17 @@
 #!/usr/local/bin/python3
 
 import os
+import sys
 import time
 import subprocess
 import json
 
 import paramiko
 
-NODE_FILE = "nodes.json"
+CURRENT_PATH = os.getcwd()
+NODE_FILE = CURRENT_PATH + "/orchestration/nodes.json"
 
-SSH_USERNAME = "monsieur.ahn"
+SSH_USERNAME = ""
 SSH_PRIVKEY_PATH = os.environ["HOME"] + "/.ssh/id_rsa"
 
 SLEEP_TIME = 3 
@@ -35,7 +37,6 @@ def main():
     target = "val1"
     amount = 100 * ONEAMO
 
-    print("bootstrap %s node" % (target))
     bootstrap(ssh, nodes, target)
     
     print("faucet to %s: %d" % (target, amount)) 
@@ -52,7 +53,6 @@ def main():
     del nodes[target]
 
     for target in list(nodes.keys()):        
-        print("bootstrap %s node" % (target))
         bootstrap(ssh, nodes, target)
 
     for target in list(nodes.keys()):
@@ -61,12 +61,12 @@ def main():
 
     for target in list(nodes.keys()):
         print("stake for %s: %d" % (target, amount))
-        stake(rpc_addr, target,nodes[target]["validator_pubkey"], amount) 
+        stake(rpc_addr, target, nodes[target]["validator_pubkey"], amount) 
 
-def amocli_exec(cmd_type, cmd_opt, rpc_addr, key_to_use, dest_addr, amount):
+def amocli_exec(tx_type, rpc_addr, key_to_use, dest_addr, amount):
     try:
-        command = "%s %s --rpc %s %s --user %s %s %s %d" % (AMOCLI, OPT, rpc_addr, cmd_type, key_to_use, 
-                                                            cmd_opt, dest_addr, amount)
+        command = "%s %s --rpc %s tx --user %s %s %s %d" % (AMOCLI, OPT, rpc_addr, key_to_use, 
+                                                            tx_type, dest_addr, amount)
     
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         out, err = proc.communicate()
@@ -80,19 +80,25 @@ def amocli_exec(cmd_type, cmd_opt, rpc_addr, key_to_use, dest_addr, amount):
     return out
 
 def stake(rpc_addr, key_to_use, target_addr, amount):
-    result = amocli_exec("tx", "stake", rpc_addr, key_to_use, target_addr, amount)
-    print(result)
+    result = amocli_exec("stake", rpc_addr, key_to_use, target_addr, amount)
+    print(result.decode('utf-8'))
 
-def transfer(rpc_addr, from_name, to_addr, amount):
-    result = amocli_exec("tx", "transfer", rpc_addr, from_name, to_addr, amount)
-    print(result)
+def transfer(rpc_addr, from_key, to_addr, amount):
+    result = amocli_exec("transfer", rpc_addr, from_key, to_addr, amount)
+    print(result.decode('utf-8'))
 
 def bootstrap(ssh, nodes, target):
     try:
-        ssh = ssh_connect(ssh, nodes[target]["ip_addr"])
+        print("[%s] bootstrap node" % (target))
+        
+        target_ip = nodes[target]["ip_addr"]
+
+        print("[%s] connecting to %s" % (target, target_ip))
+        ssh = ssh_connect(ssh, target_ip)
+        print("[%s] connected to %s" % (target, target_ip))
 
         print("[%s] execute 'run.sh' script" % (target))
-        command = "sudo ./orchestration/run.sh /orchestration/%s" % (target)
+        command = "sudo ./orchestration/run.sh /orchestration/%s/" % (target)
         ssh_exec(ssh, command)
     
         print("[%s] sleep %d seconds" % (target, SLEEP_TIME))
@@ -100,9 +106,7 @@ def bootstrap(ssh, nodes, target):
 
         print("[%s] check status" % (target))
         command = "sudo docker inspect " + target
-        stdin, stdout, stderr = ssh_exec(ssh, command)
-
-        if stderr.read(): raise Exception(stderr.read())
+        ssh_exec(ssh, command)
 
     except Exception as err:
         print("[%s] %s" % (target, err))
@@ -114,9 +118,13 @@ def bootstrap(ssh, nodes, target):
 
 def ssh_exec(ssh, command):
     try:
-        return ssh.exec_command(command)
-    except Exception as error:
-        print(error)
+        stdin, stdout, stderr = ssh.exec_command(command)
+
+        if stdout.channel.recv_exit_status(): 
+            raise Exception("couldn't execute: %s" % (command))
+
+    except Exception as err:
+        print(err)
         exit(1)
 
 def ssh_connect(ssh, hostname):
@@ -131,4 +139,13 @@ def ssh_connect(ssh, hostname):
     return ssh
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 %s <ssh_username> <ssh_privkey_path>(optional)" % (sys.argv[0]))
+        exit(1)
+    
+    if len(sys.argv) == 3:
+        SSH_PRIVKEY_PATH = sys.argv[2]
+
+    SSH_USERNAME = sys.argv[1]
+
     main()
