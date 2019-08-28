@@ -12,7 +12,7 @@
 		"ip_addr": "123.456.789.1",
 		"port": 26656,
 		"node_id": "__tendermint_node_id__",
-		"validator_pubkey": "__tendermint_validator_id__",
+		"validator_pubkey": "__tendermint_validator_pubkey__",
 		"amo_addr": "__amo_address_to_stake_with__"
 	},
 	"val2": {
@@ -20,7 +20,7 @@
 		"ip_addr": "123.456.789.2",
 		"port": 26656,
 		"node_id": "__tendermint_node_id__",
-		"validator_pubkey": "__tendermint_validator_id__",
+		"validator_pubkey": "__tendermint_validator_pubkey__",
 		"amo_addr": "__amo_address_to_stake_with__"
 	}
 }
