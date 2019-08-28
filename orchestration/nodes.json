@@ -1,6 +1,7 @@
 {
 	"nodes": { 
 		"seed": {
+			"username": "monsieur.ahn",
 			"ip_addr": "35.238.113.80",
 			"port": 26656,
 			"node_id": "b905bbee1abb579a1b6210fa84843a08ef9c1e6f",
@@ -8,6 +9,7 @@
 			"amo_addr": ""
 		},
 		"val1": {
+			"username": "monsieur.ahn",
 			"ip_addr": "35.200.112.127",
 			"port": 26656,
 			"node_id": "b7b0b619e90a5c7e4db2164600efe842a6091939",
@@ -15,6 +17,7 @@
 			"amo_addr": "7564B4DF490866BC2ADC8A71C083890DD6C29ED0"
 		},
 		"val2": {
+			"username": "monsieur.ahn",
 			"ip_addr": "35.242.243.43",
 			"port": 26656,
 			"node_id": "43bcf5a99f487756159c21d9a0124b940cefe7a5",
