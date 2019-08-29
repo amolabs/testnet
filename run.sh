@@ -4,7 +4,7 @@
 DOCKEROPT="-itd --rm"
 
 usage() {
-	echo "syntax: $0 [options] <data_root>"
+	echo "syntax: $0 [options] <image_name> <data_root>"
 	echo "options:"
 	echo "  -f  run in foreground"
 	echo "  -h  print usage"
@@ -23,12 +23,14 @@ while getopts "hf" arg; do
 	esac
 done
 
-DATAROOT=$1
-if [ -z "$DATAROOT" ]; then
+IMAGE=$1
+DATAROOT=$2
+if [ -z "$DATAROOT" -o -z "$IMAGE" ]; then
 	usage
 	exit
 fi
-echo "data root      = $DATAROOT"
+echo "data root 	= $DATAROOT"
+echo "image name 	= $IMAGE"
 NAME=$(basename $DATAROOT)
 if [ -z "$NAME" ]; then
 	echo "Could not determine docker container name. Using 'bogus'..."
@@ -44,6 +46,6 @@ echo -n "Removing existing container..."
 docker rm "$NAME" > /dev/null 2>&1
 echo "done"
 echo -n "Launching new container..."
-CONTID=$(docker run $DOCKEROPT -v $DATAROOT/tendermint:/tendermint:Z -v $DATAROOT/amo:/amo:Z --name "$NAME" -p 26656-26657:26656-26657 amolabs/amod)
+CONTID=$(docker run $DOCKEROPT -v $DATAROOT/tendermint:/tendermint:Z -v $DATAROOT/amo:/amo:Z --name "$NAME" -p 26656-26657:26656-26657 "$IMAGE")
 if [ $? == 0 ]; then echo "done"; fi
 echo "Container id = $CONTID"

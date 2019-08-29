@@ -10,7 +10,7 @@
 /faucet/transfer.log
 
 # orchestration config files
-/orchestration/config
+/orchestration/data
 
 # ctags
 tags
