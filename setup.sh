@@ -4,7 +4,7 @@
 MODE="testnet"
 
 usage() {
-	echo "syntax: $0 [options] <data_root> <moniker> [peers]"
+	echo "syntax: $0 [options] <data_root> <moniker> <ext_addr> [peers] "
 	echo "options:"
 	echo "  -l  setup local testnet"
 	echo "  -h  print usage"
@@ -25,11 +25,12 @@ done
 
 DATAROOT=$1
 MONIKER=$2
-PEERS=$3
+EXTADDR=$3
+PEERS=$4
 
 OS=$(uname)
 
-if [ -z "$DATAROOT" -o -z "$MONIKER" ]; then
+if [ -z "$DATAROOT" -o -z "$MONIKER" -o -z "$EXTADDR" ]; then
 	usage
 	exit
 fi
@@ -37,13 +38,9 @@ fi
 echo "data root = $DATAROOT"
 echo "moniker   = $MONIKER"
 echo "peers     = $PEERS"
-if [ "$OS" == "Linux" ]; then
-	iface=$(route -n | grep '^0.0.0.0' | awk '{print $8}')
-	extaddr=$(ip -f inet a show dev $iface | grep '\<inet\>' | head -1 | awk '{print $2}' | awk -F'/' '{print $1}')
-# TODO
-#elif [ "$OS" == "Darwin" ]; then
-fi
-echo "extaddr = $extaddr"
+echo "extaddr 	= $EXTADDR"
+
+rm -rf $DATAROOT
 
 mkdir -p $DATAROOT/amo
 mkdir -p $DATAROOT/tendermint/config
@@ -51,15 +48,15 @@ mkdir -p $DATAROOT/tendermint/data
 cp -f config.toml.in config.toml
 sed -e s/@moniker@/$MONIKER/ -i.tmp config.toml
 sed -e s/@peers@/$PEERS/ -i.tmp config.toml
-if [ ! -z "$extaddr" ]; then
-	sed -e s/@external@/tcp:\\/\\/$extaddr:26656/ -i.tmp config.toml
+if [ ! -z "$EXTADDR" ]; then
+	sed -e s/@external@/tcp:\\/\\/$EXTADDR:26656/ -i.tmp config.toml
 else
 	sed -e s/@external@// -i.tmp config.toml
 fi
 
 mv -f config.toml $DATAROOT/tendermint/config/
 if [ $MODE == "testnet" ]; then
-	cp -f testnet_190823/genesis.json $DATAROOT/tendermint/config/
+	cp -f genesis.json $DATAROOT/tendermint/config/
 else
 	rm -f $DATAROOT/tendermint/config/genesis.json
 fi
