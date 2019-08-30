@@ -27,14 +27,14 @@ ONEAMO = 1000000000000000000
 def up(ssh, amo, nodes, only_boot):
     nodes = {**nodes}
     rpc_addr = nodes["val1"]["ip_addr"] + ":26657"
-    docker_image = IMAGE_NAME + ":" + amo["image_version"] 
+    image_version = amo["image_version"] 
 
     target = "val1"
     node = nodes[target]
 
     amount = 100 * ONEAMO
 
-    bootstrap(ssh, node, docker_image, target)
+    bootstrap(ssh, node, image_version, target)
     
     if not only_boot:
         print("faucet to %s: %d" % (target, amount)) 
@@ -48,13 +48,13 @@ def up(ssh, amo, nodes, only_boot):
     target = "seed"
     node = nodes[target]
 
-    bootstrap(ssh, node, docker_image, target)
+    bootstrap(ssh, node, image_version, target)
 
     del nodes[target]
 
     for target in list(nodes.keys()):        
         node = nodes[target]
-        bootstrap(ssh, node, docker_image, target)
+        bootstrap(ssh, node, image_version, target)
 
     if not only_boot:
         for target in list(nodes.keys()):
@@ -133,7 +133,7 @@ def transfer(rpc_addr, from_key, to_addr, amount):
     result = amocli_exec("transfer", rpc_addr, from_key, to_addr, amount)
     print(result.decode('utf-8'))
 
-def bootstrap(ssh, node, docker_image, target):
+def bootstrap(ssh, node, image_version, target):
     try:
         print("[%s] bootstrap node" % (target))
         
@@ -144,7 +144,7 @@ def bootstrap(ssh, node, docker_image, target):
         print("[%s] connected to %s" % (target, target_ip))
 
         print("[%s] execute 'run.sh' script" % (target))
-        command = "sudo ./orchestration/run.sh %s /orchestration/%s/" % (docker_image, target)
+        command = "sudo ./orchestration/run.sh /orchestration/%s/ %s" % (target, image_version)
         ssh_exec(ssh, command)
     
         print("[%s] sleep %d seconds" % (target, SLEEP_TIME))
@@ -232,9 +232,9 @@ def setup_node(ssh, amo, node, target, peer):
         ssh_transfer(ssh, local_path, remote_path)
 
         print("[%s] execute 'setup.sh' script" % (target))
-        command = "cd %s; sudo ./setup.sh /orchestration/%s/ %s %s %s" % (orch_remote_path,
-                                                                          target, target,
-                                                                          target_ip, peer)
+        command = "cd %s; sudo ./setup.sh -e %s /orchestration/%s/ %s %s" % (orch_remote_path,
+                                                                             target_ip, target,
+                                                                             target, peer)
         ssh_exec(ssh, command)
 
     except Exception as err:

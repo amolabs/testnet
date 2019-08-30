@@ -23,10 +23,11 @@ to use this node if you have no knowledge of any other nodes.
 
 ## Using run.sh
 This script will launch a docker container from the official `amolabs/amod`
-image. The docker container's name will be set as described in the explanation
-of `<data_root>`.
+(default: latest) image. The user can specify a specific version of the image 
+by giving `image_version` as an argument option. The docker container's name 
+will be set as described in the explanation of `<data_root>`.
 ```bash
-./run.sh <data_root>
+./run.sh <data_root> [image_version]
 ```
 Since the script will run the container in detached mode, you can see the logs
 from the container as follows:
