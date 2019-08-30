@@ -11,50 +11,60 @@ import paramiko
 SSH_PRIVKEY_PATH = os.environ["HOME"] + "/.ssh/id_rsa"
 
 CURRENT_PATH = os.getcwd()
-NODE_FILE = CURRENT_PATH + "/orchestration/nodes.json"
-CONFIG_LOCAL_PATH = CURRENT_PATH + "/orchestration/config/"
+ORCH_PATH = CURRENT_PATH + "/orchestration"
+CONFIG_PATH =  ORCH_PATH + "/config.json"
+DATA_PATH = ORCH_PATH + "/data"
 
 SLEEP_TIME = 3 
 
+IMAGE_NAME = "amolabs/amod"
+
 AMOCLI = "amocli"
 OPT = "--json"
-GENESIS = "genesis"
+
 ONEAMO = 1000000000000000000
 
-def up(ssh, nodes, only_boot):
+def up(ssh, amo, nodes, only_boot):
     nodes = {**nodes}
     rpc_addr = nodes["val1"]["ip_addr"] + ":26657"
+    image_version = amo["image_version"] 
 
     target = "val1"
+    node = nodes[target]
+
     amount = 100 * ONEAMO
 
-    bootstrap(ssh, nodes, target)
+    bootstrap(ssh, node, image_version, target)
     
     if not only_boot:
         print("faucet to %s: %d" % (target, amount)) 
-        transfer(rpc_addr, GENESIS, nodes[target]["amo_addr"], amount) 
+        transfer(rpc_addr, amo["faucet_account"], node["amo_addr"], amount) 
 
         print("stake for %s: %d" % (target, amount)) 
-        stake(rpc_addr, target, nodes[target]["validator_pubkey"], amount)
+        stake(rpc_addr, target, node["validator_pubkey"], amount)
 
     del nodes[target]
 
     target = "seed"
-    bootstrap(ssh, nodes, target)
+    node = nodes[target]
+
+    bootstrap(ssh, node, image_version, target)
 
     del nodes[target]
 
     for target in list(nodes.keys()):        
-        bootstrap(ssh, nodes, target)
+        node = nodes[target]
+        bootstrap(ssh, node, image_version, target)
 
     if not only_boot:
         for target in list(nodes.keys()):
-            print("faucet to %s: %d" % (target, amount))
-            transfer(rpc_addr, GENESIS, nodes[target]["amo_addr"], amount) 
+            node = nodes[target]
 
-        for target in list(nodes.keys()):
+            print("faucet to %s: %d" % (target, amount))
+            transfer(rpc_addr, amo["faucet_account"], node["amo_addr"], amount) 
+
             print("stake for %s: %d" % (target, amount))
-            stake(rpc_addr, target, nodes[target]["validator_pubkey"], amount) 
+            stake(rpc_addr, target, node["validator_pubkey"], amount) 
 
     nodes.clear()
 
@@ -62,35 +72,40 @@ def down(ssh, nodes):
     nodes = {**nodes}
 
     target = "val1"
-    docker_stop(ssh, nodes, target)
+    docker_stop(ssh, nodes[target], target)
     del nodes[target]
 
     target = "seed"
-    docker_stop(ssh, nodes, target)
+    docker_stop(ssh, nodes[target], target)
     del nodes[target]
 
     for target in list(nodes.keys()):        
-        docker_stop(ssh, nodes, target)
+        docker_stop(ssh, nodes[target], target)
     
     nodes.clear()
 
-def setup(ssh, nodes):
+def setup(ssh, amo, nodes):
     nodes = {**nodes}
 
     target = "val1"
-    setup_node(ssh, nodes, target, "''")
+    node = nodes[target]
 
-    peer = nodes[target]["node_id"] + "@" + nodes[target]["ip_addr"] + ":26656"
+    setup_node(ssh, amo, node, target, "''")
+
+    peer = node["node_id"] + "@" + node["ip_addr"] + ":" + str(node["port"])
     del nodes[target]
 
     target = "seed"
-    setup_node(ssh, nodes, target, peer)
+    node = nodes[target]
 
-    peer = nodes[target]["node_id"] + "@" + nodes[target]["ip_addr"] + ":26656"
+    setup_node(ssh, amo, node, target, peer)
+
+    peer = node["node_id"] + "@" + node["ip_addr"] + ":" + str(node["port"])
     del nodes[target]
 
     for target in list(nodes.keys()):        
-        setup_node(ssh, nodes, target, peer)
+        node = nodes[target]
+        setup_node(ssh, amo, node, target, peer)
 
     nodes.clear()
 
@@ -118,18 +133,18 @@ def transfer(rpc_addr, from_key, to_addr, amount):
     result = amocli_exec("transfer", rpc_addr, from_key, to_addr, amount)
     print(result.decode('utf-8'))
 
-def bootstrap(ssh, nodes, target):
+def bootstrap(ssh, node, image_version, target):
     try:
         print("[%s] bootstrap node" % (target))
         
-        target_ip = nodes[target]["ip_addr"]
+        target_ip = node["ip_addr"]
 
         print("[%s] connecting to %s" % (target, target_ip))
-        ssh = ssh_connect(ssh, target_ip, nodes[target]["username"])
+        ssh = ssh_connect(ssh, target_ip, node["username"])
         print("[%s] connected to %s" % (target, target_ip))
 
         print("[%s] execute 'run.sh' script" % (target))
-        command = "sudo ./orchestration/run.sh /orchestration/%s/" % (target)
+        command = "sudo ./orchestration/run.sh /orchestration/%s/ %s" % (target, image_version)
         ssh_exec(ssh, command)
     
         print("[%s] sleep %d seconds" % (target, SLEEP_TIME))
@@ -147,12 +162,12 @@ def bootstrap(ssh, nodes, target):
     finally:
         ssh.close()
 
-def docker_stop(ssh, nodes, target):
+def docker_stop(ssh, node, target):
     try:
-        target_ip = nodes[target]["ip_addr"]
+        target_ip = node["ip_addr"]
 
         print("[%s] connecting to %s" % (target, target_ip))
-        ssh = ssh_connect(ssh, target_ip, nodes[target]["username"])
+        ssh = ssh_connect(ssh, target_ip, node["username"])
         print("[%s] connected to %s" % (target, target_ip))
 
         print("[%s] stop docker container" % (target))
@@ -167,47 +182,59 @@ def docker_stop(ssh, nodes, target):
     finally:
         ssh.close()
 
-def setup_node(ssh, nodes, target, peer):
+def setup_node(ssh, amo, node, target, peer):
     try:
         print("[%s] setting up node" % (target))
 
-        target_ip = nodes[target]["ip_addr"]
+        target_ip = node["ip_addr"]
 
         print("[%s] connecting to %s" % (target, target_ip))
-        ssh = ssh_connect(ssh, target_ip, nodes[target]["username"])
+        ssh = ssh_connect(ssh, target_ip, node["username"])
         print("[%s] connected to %s" % (target, target_ip))
 
         command = "pwd"
-        config_remote_path = ssh_exec(ssh, command)[0].strip() + "/orchestration/"
+        orch_remote_path = ssh_exec(ssh, command)[0].strip() + "/orchestration"
 
-        print("[%s] scp script files" % (target))
-        for f in os.listdir(CURRENT_PATH):
-            local_path = os.path.join(CURRENT_PATH, f)
-            remote_path = os.path.join(config_remote_path, f)
-            
-            if os.path.isfile(local_path) and local_path.endswith(".sh"):
-                ssh_transfer(ssh, local_path, remote_path)
-                command = "sudo chmod +x %s" % (remote_path)
-                ssh_exec(ssh, command)
+        docker_image = IMAGE_NAME + ":" + amo["image_version"]
+
+        print("[%s] docker pull %s" % (target, docker_image))
+        command = "sudo docker pull %s" % (docker_image)
+        ssh_exec(ssh, command)
 
         print("[%s] scp general config files" % (target))
-        for f in os.listdir(CONFIG_LOCAL_PATH):
-            local_path = os.path.join(CONFIG_LOCAL_PATH, f)
-            remote_path = os.path.join(config_remote_path, f)
+        for f in os.listdir(CURRENT_PATH):
+            local_path = os.path.join(CURRENT_PATH, f)
+            remote_path = os.path.join(orch_remote_path, f)
+            
+            if os.path.isfile(local_path) and \
+               (local_path.endswith(".sh") or \
+                local_path.endswith(".in") or \
+                local_path.endswith(".json")):
 
-            if os.path.isfile(local_path): ssh_transfer(ssh, local_path, remote_path)
+                ssh_transfer(ssh, local_path, remote_path)
+                
+                if local_path.endswith(".sh"):
+                    command = "sudo chmod +x %s" % (remote_path)
+                    ssh_exec(ssh, command)
 
         print("[%s] scp private config files" % (target))
-        for f in os.listdir(CONFIG_LOCAL_PATH + target + "/"):
-            local_path = os.path.join(CONFIG_LOCAL_PATH + target + "/", f)
-            remote_path = os.path.join(config_remote_path, f)
+        for f in os.listdir(DATA_PATH + "/" + target + "/"):
+            local_path = os.path.join(DATA_PATH + "/" + target + "/", f)
+            remote_path = os.path.join(orch_remote_path, f)
 
             if os.path.isfile(local_path): ssh_transfer(ssh, local_path, remote_path)
 
+        genesis_file = amo["genesis_file"]
+
+        print("[%s] scp %s file" % (target, genesis_file))
+        local_path = os.path.join(CURRENT_PATH, genesis_file)
+        remote_path = os.path.join(orch_remote_path, "genesis.json")
+        ssh_transfer(ssh, local_path, remote_path)
+
         print("[%s] execute 'setup.sh' script" % (target))
-        command = "cd %s; sudo ./setup.sh /orchestration/%s/ %s %s %s" % (config_remote_path,
-                                                                          target, target,
-                                                                          target_ip, peer)
+        command = "cd %s; sudo ./setup.sh -e %s /orchestration/%s/ %s %s" % (orch_remote_path,
+                                                                             target_ip, target,
+                                                                             target, peer)
         ssh_exec(ssh, command)
 
     except Exception as err:
@@ -251,8 +278,11 @@ def ssh_connect(ssh, hostname, username):
 
 def main():
     # get data from json file:
-    with open(NODE_FILE) as file:
-        nodes = json.load(file)
+    with open(CONFIG_PATH) as file:
+        data = json.load(file)
+
+    nodes = data["nodes"]
+    amo = data["amo"]
 
     # prepare ssh module
     ssh = paramiko.SSHClient()
@@ -261,17 +291,17 @@ def main():
     cmd = sys.argv[1]
     
     if cmd == "init":
-        up(ssh, nodes, only_boot=False)
+        up(ssh, amo, nodes, only_boot=False)
     elif cmd == "up": 
-        up(ssh, nodes, only_boot=True)
+        up(ssh, amo, nodes, only_boot=True)
     elif cmd == "down": 
         down(ssh, nodes)
     elif cmd == "setup":
-        setup(ssh, nodes)
+        setup(ssh, amo, nodes)
     elif cmd == "reset":
         down(ssh, nodes)
-        setup(ssh, nodes)
-        up(ssh, nodes, only_boot=False)
+        setup(ssh, amo, nodes)
+        up(ssh, amo, nodes, only_boot=False)
     else:
         usage()
 

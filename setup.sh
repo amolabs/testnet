@@ -2,19 +2,23 @@
 
 # default setting
 MODE="testnet"
+EXTADDR=""
 
 usage() {
-	echo "syntax: $0 [options] <data_root> <moniker> <ext_addr> [peers] "
+	echo "syntax: $0 [options] <data_root> <moniker> [peers] "
 	echo "options:"
 	echo "  -l  setup local testnet"
+	echo "  -e  external address"
 	echo "  -h  print usage"
 }
 
-while getopts "hl" arg; do
+while getopts "le:h" arg; do
 	case $arg in
 		l)
 			MODE="local"
-			shift
+			;;
+		e)  
+			EXTADDR=$OPTARG
 			;;
 		h | *)
 			usage
@@ -23,14 +27,15 @@ while getopts "hl" arg; do
 	esac
 done
 
+shift $(( OPTIND - 1 ))
+
 DATAROOT=$1
 MONIKER=$2
-EXTADDR=$3
-PEERS=$4
+PEERS=$3
 
 OS=$(uname)
 
-if [ -z "$DATAROOT" -o -z "$MONIKER" -o -z "$EXTADDR" ]; then
+if [ -z "$DATAROOT" -o -z "$MONIKER" ]; then
 	usage
 	exit
 fi
@@ -38,7 +43,7 @@ fi
 echo "data root = $DATAROOT"
 echo "moniker   = $MONIKER"
 echo "peers     = $PEERS"
-echo "extaddr 	= $EXTADDR"
+echo "extaddr   = $EXTADDR"
 
 rm -rf $DATAROOT
 

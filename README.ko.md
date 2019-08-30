@@ -22,11 +22,12 @@
 있다. 다른 적덩한 peer를 알지 못한다면 이 노드를 peer로 지정할 것을 권장한다.
 
 ## run.sh 사용
-이 스크립트는 공식 배포되는 `amolabs/amod` 이미지로부터 docker container를
-생성하여 실행한다. 이 docker container의 이름은 앞서 `<data_root>`의 설명에서
+이 스크립트는 공식 배포되는 `amolabs/amod`(기본: latest) 이미지로부터 docker 
+container를 생성하여 실행한다. 특정 버전의 이미지를 원하는 경우 `image_version`
+을 입력하면 된다. 이 docker container의 이름은 앞서 `<data_root>`의 설명에서
 언급한 것과 같이 지정된다.
 ```bash
-./run.sh <data_root>
+./run.sh <data_root> [image_version] 
 ```
 이 스크립트는 container를 detached mode로 실행하기 때문에 container의 로그를
 보려면 다음과 같이 한다:
