@@ -32,5 +32,20 @@ will be set as described in the explanation of `<data_root>`.
 Since the script will run the container in detached mode, you can see the logs
 from the container as follows:
 ```bash
-docker logs -f <node_name>`
+docker logs -f <node_name>
 ```
+
+## Using orchestration/do.py
+This python script provides the features(`init`, `up`, `down`, `setup`,
+`reset`) required for orchestrating AMO nodes.
+```bash
+./orchestration/do.py {init | up | down | setup | reset }
+```
+To use the script, the preset data are required as follows:
+- `$HOME/.ssh/id_rsa`: ssh private key 
+- `orchestration/config.json`: containing node info
+- `orchestration/data/<target>/node_key.json`: tendermint node key
+- `orchestration/data/<target>/priv_validator_key.json`: tendermint validator key
+
+The tendermint related keys located under `data` folder should correspond with
+the ones written in the `orchestation/config.json`.

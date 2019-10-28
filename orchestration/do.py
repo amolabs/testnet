@@ -144,7 +144,7 @@ def bootstrap(ssh, node, image_version, target):
         print("[%s] connected to %s" % (target, target_ip))
 
         print("[%s] execute 'run.sh' script" % (target))
-        command = "sudo ./orchestration/run.sh /orchestration/%s/ %s" % (target, image_version)
+        command = "sudo ./orchestration/run.sh /testnet/%s/ %s" % (target, image_version)
         ssh_exec(ssh, command)
     
         print("[%s] sleep %d seconds" % (target, SLEEP_TIME))
@@ -232,7 +232,7 @@ def setup_node(ssh, amo, node, target, peer):
         ssh_transfer(ssh, local_path, remote_path)
 
         print("[%s] execute 'setup.sh' script" % (target))
-        command = "cd %s; sudo ./setup.sh -e %s /orchestration/%s/ %s %s" % (orch_remote_path,
+        command = "cd %s; sudo ./setup.sh -e %s /testnet/%s/ %s %s" % (orch_remote_path,
                                                                              target_ip, target,
                                                                              target, peer)
         ssh_exec(ssh, command)

@@ -14,3 +14,6 @@
 
 # ctags
 tags
+
+# temp files
+vim-markdown-preview.html
