@@ -3,9 +3,13 @@ Testnet genesis.json files and launch scripts.
 
 ## Using setup.sh
 This script helps to prepare data directory and configuration files.
+
+### Usage
 ```bash
 ./setup.sh <data_root> <moniker> <peers>
 ```
+
+### Information
 - `<data_root>` is where the node's data files and configuration files reside.
   Name any direcotry where the user has `write` permission, and the script will
   create or reuse the directory. It is recommended to use the directory with
@@ -26,6 +30,8 @@ This script will launch a docker container from the official `amolabs/amod`
 (default: latest) image. The user can specify a specific version of the image 
 by giving `image_version` as an argument option. The docker container's name 
 will be set as described in the explanation of `<data_root>`.
+
+### Usage
 ```bash
 ./run.sh <data_root> [image_version]
 ```
@@ -36,11 +42,22 @@ docker logs -f <node_name>
 ```
 
 ## Using orchestration/do.py
-This python script provides the features(`init`, `up`, `down`, `setup`,
-`reset`) required for orchestrating AMO nodes.
+This python script provides the following features required for orchestrating
+AMO nodes.
+
+### Features
+- `init`: boot nodes, distribute coins and stake them 
+- `up`: just boot nodes
+- `down`: shutdown nodes
+- `setup`: copy config files located under `orchestration/data/<target>` to each target node
+- `reset`: process sequentially `down` -> `reset` -> `init`
+
+### Usage
 ```bash
 ./orchestration/do.py {init | up | down | setup | reset }
 ```
+
+### Requiries
 To use the script, the preset data are required as follows:
 - `$HOME/.ssh/id_rsa`: ssh private key 
 - `orchestration/config.json`: containing node info
