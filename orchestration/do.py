@@ -19,8 +19,9 @@ SLEEP_TIME = 3
 
 IMAGE_NAME = "amolabs/amod"
 
-AMOCLI = "amocli"
-OPT = "--json"
+AMOCLICMD = "amocli"
+AMOCLIOPT = "--json"
+AMOCLI = AMOCLICMD + ' ' + AMOCLIOPT
 
 ONEAMO = 1000000000000000000
 
@@ -111,8 +112,8 @@ def setup(ssh, amo, nodes):
 
 def amocli_exec(tx_type, rpc_addr, key_to_use, dest_addr, amount):
     try:
-        command = "%s %s --rpc %s tx --user %s %s %s %d" % (AMOCLI, OPT, rpc_addr, key_to_use, 
-                                                            tx_type, dest_addr, amount)
+        command = "%s --rpc %s tx --user %s %s %s %d" % (
+                AMOCLI, rpc_addr, key_to_use, tx_type, dest_addr, amount)
     
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         out, err = proc.communicate()
