@@ -1,32 +1,29 @@
 {
+	"client": {
+		"ssh_key_path": "__ssh_private_key__"
+	},
 	"amo": {
 		"genesis_file": "__genesis_file_path__",
 		"image_version": "__docker_image_version__",
-		"faucet_account": "__amo_faucet_account__"
+		"faucet_user": "__amo_faucet_account__"
 	},
 	"nodes": {
 		"seed": {
 			"username": "__ssh_username__",
 			"ip_addr": "123.456.789.0",
-			"port": 26656,
-			"node_id": "__tendermint_node_id__",
-			"validator_pubkey": "",
-			"amo_addr": ""
+			"p2p_port": 26656,
+			"amo_addr": "__amo_address_to_stake_with__"
 		},
 		"val1": {
 			"username": "__ssh_username__",
 			"ip_addr": "123.456.789.1",
-			"port": 26656,
-			"node_id": "__tendermint_node_id__",
-			"validator_pubkey": "__tendermint_validator_pubkey__",
+			"p2p_port": 26656,
 			"amo_addr": "__amo_address_to_stake_with__"
 		},
 		"val2": {
 			"username": "__ssh_username__",
 			"ip_addr": "123.456.789.2",
-			"port": 26656,
-			"node_id": "__tendermint_node_id__",
-			"validator_pubkey": "__tendermint_validator_pubkey__",
+			"p2p_port": 26656,
 			"amo_addr": "__amo_address_to_stake_with__"
 		}
 	}
