@@ -63,6 +63,7 @@ mv -f config.toml $DATAROOT/tendermint/config/
 if [ $MODE == "testnet" ]; then
 	cp -f genesis.json $DATAROOT/tendermint/config/
 else
+	# this will create a new arbitrary genesis file
 	rm -f $DATAROOT/tendermint/config/genesis.json
 fi
 
@@ -77,9 +78,7 @@ if [ ! -f $DATAROOT/tendermint/data/priv_validator_state.json ]; then
 fi
 
 docker run -it --rm -v $DATAROOT/tendermint:/tendermint:Z amolabs/amod /usr/bin/tendermint --home /tendermint init
-NODEID=$(docker run -it --rm -v $DATAROOT/tendermint:/tendermint:Z amolabs/amod /usr/bin/tendermint --home /tendermint show_node_id)
-NODEID=${NODEID//}
-echo "node_id = $NODEID"
+docker run --rm -v $DATAROOT/tendermint:/tendermint:Z amolabs/amod /usr/bin/tendermint --home /tendermint show_node_id 2> /dev/null
 
 rm -f *.tmp
 
