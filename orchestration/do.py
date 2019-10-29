@@ -304,6 +304,9 @@ def main():
             client['ssh_key_path'] = DEFAULT_KEY_PATH
     else:
         client = {"ssh_key_path": DEFAULT_KEY_PATH}
+
+    config["client"] = client
+
     nodes = config["nodes"]
     amo = config["amo"]
 
