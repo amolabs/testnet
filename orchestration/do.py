@@ -8,12 +8,11 @@ import json
 
 import paramiko
 
-SSH_PRIVKEY_PATH = os.environ["HOME"] + "/.ssh/id_rsa"
-
 CURRENT_PATH = os.getcwd()
 ORCH_PATH = CURRENT_PATH + "/orchestration"
 CONFIG_PATH =  ORCH_PATH + "/config.json"
 DATA_PATH = ORCH_PATH + "/data"
+DEFAULT_KEY_PATH = os.environ["HOME"] + "/.ssh/id_rsa"
 
 SLEEP_TIME = 3 
 
@@ -29,43 +28,49 @@ def up(ssh, amo, nodes, only_boot):
     nodes = {**nodes}
     rpc_addr = nodes["val1"]["ip_addr"] + ":26657"
     image_version = amo["image_version"] 
+    amount = 100 * ONEAMO
 
     target = "val1"
     node = nodes[target]
-
-    amount = 100 * ONEAMO
-
     bootstrap(ssh, node, image_version, target)
-    
     if not only_boot:
+        valkey_path = os.path.join(DATA_PATH, target,
+                'priv_validator_key.json')
+        val_pubkey = None
+        if os.path.isfile(valkey_path):
+            with open(valkey_path) as file:
+                valkey = json.load(file)
+                val_pubkey = valkey['pub_key']['value']
+        if val_pubkey is None:
+            return
         print("faucet to %s: %d" % (target, amount)) 
-        transfer(rpc_addr, amo["faucet_account"], node["amo_addr"], amount) 
-
+        transfer(rpc_addr, amo["faucet_user"], node["amo_addr"], amount) 
         print("stake for %s: %d" % (target, amount)) 
-        stake(rpc_addr, target, node["validator_pubkey"], amount)
-
+        stake(rpc_addr, target, val_pubkey, amount)
     del nodes[target]
 
     target = "seed"
-    node = nodes[target]
-
-    bootstrap(ssh, node, image_version, target)
-
-    del nodes[target]
-
-    for target in list(nodes.keys()):        
+    if target in nodes:
         node = nodes[target]
         bootstrap(ssh, node, image_version, target)
+        del nodes[target]
 
-    if not only_boot:
-        for target in list(nodes.keys()):
-            node = nodes[target]
-
+    for target, node in nodes.items():        
+        bootstrap(ssh, node, image_version, target)
+        if not only_boot:
+            valkey_path = os.path.join(DATA_PATH, target,
+                    'priv_validator_key.json')
+            val_pubkey = None
+            if os.path.isfile(valkey_path):
+                with open(valkey_path) as file:
+                    valkey = json.load(file)
+                    val_pubkey = valkey['pub_key']['value']
+            if val_pubkey is None:
+                return
             print("faucet to %s: %d" % (target, amount))
-            transfer(rpc_addr, amo["faucet_account"], node["amo_addr"], amount) 
-
+            transfer(rpc_addr, amo["faucet_user"], node["amo_addr"], amount) 
             print("stake for %s: %d" % (target, amount))
-            stake(rpc_addr, target, node["validator_pubkey"], amount) 
+            stake(rpc_addr, target, val_pubkey, amount) 
 
     nodes.clear()
 
@@ -77,8 +82,9 @@ def down(ssh, nodes):
     del nodes[target]
 
     target = "seed"
-    docker_stop(ssh, nodes[target], target)
-    del nodes[target]
+    if target in nodes:
+        docker_stop(ssh, nodes[target], target)
+        del nodes[target]
 
     for target in list(nodes.keys()):        
         docker_stop(ssh, nodes[target], target)
@@ -90,19 +96,17 @@ def setup(ssh, amo, nodes):
 
     target = "val1"
     node = nodes[target]
-
-    setup_node(ssh, amo, node, target, "''")
-
-    peer = node["node_id"] + "@" + node["ip_addr"] + ":" + str(node["port"])
-    del nodes[target]
+    node_id = setup_node(ssh, amo, node, target, "''")
+    peer = node_id + "@" + node["ip_addr"] + ":" + str(node["p2p_port"])
+    #print(peer)
+    del nodes[target] # exclude from loop
 
     target = "seed"
-    node = nodes[target]
-
-    setup_node(ssh, amo, node, target, peer)
-
-    peer = node["node_id"] + "@" + node["ip_addr"] + ":" + str(node["port"])
-    del nodes[target]
+    if target in nodes:
+        node = nodes[target]
+        node_id = setup_node(ssh, amo, node, target, peer)
+        peer = node_id + "@" + node["ip_addr"] + ":" + str(node["p2p_port"])
+        del nodes[target] # exclude from loop
 
     for target in list(nodes.keys()):        
         node = nodes[target]
@@ -110,10 +114,10 @@ def setup(ssh, amo, nodes):
 
     nodes.clear()
 
-def amocli_exec(tx_type, rpc_addr, key_to_use, dest_addr, amount):
+def amocli_exec(tx_type, rpc_addr, username, dest_addr, amount):
     try:
-        command = "%s --rpc %s tx --user %s %s %s %d" % (
-                AMOCLI, rpc_addr, key_to_use, tx_type, dest_addr, amount)
+        command = "%s --rpc %s tx --user %s %s %s %d" % \
+                (AMOCLI, rpc_addr, username, tx_type, dest_addr, amount)
     
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         out, err = proc.communicate()
@@ -126,12 +130,12 @@ def amocli_exec(tx_type, rpc_addr, key_to_use, dest_addr, amount):
 
     return out
 
-def stake(rpc_addr, key_to_use, target_addr, amount):
-    result = amocli_exec("stake", rpc_addr, key_to_use, target_addr, amount)
+def stake(rpc_addr, username, val_pubkey, amount):
+    result = amocli_exec("stake", rpc_addr, username, val_pubkey, amount)
     print(result.decode('utf-8'))
 
-def transfer(rpc_addr, from_key, to_addr, amount):
-    result = amocli_exec("transfer", rpc_addr, from_key, to_addr, amount)
+def transfer(rpc_addr, username, to_addr, amount):
+    result = amocli_exec("transfer", rpc_addr, username, to_addr, amount)
     print(result.decode('utf-8'))
 
 def bootstrap(ssh, node, image_version, target):
@@ -184,6 +188,7 @@ def docker_stop(ssh, node, target):
         ssh.close()
 
 def setup_node(ssh, amo, node, target, peer):
+    node_id = ''
     try:
         print("[%s] setting up node" % (target))
 
@@ -195,6 +200,9 @@ def setup_node(ssh, amo, node, target, peer):
 
         command = "pwd"
         orch_remote_path = ssh_exec(ssh, command)[0].strip() + "/orchestration"
+        print("[%s] creating remote path: %s" % (target, orch_remote_path))
+        command = "mkdir -p %s" % orch_remote_path
+        ssh_exec(ssh, command)
 
         docker_image = IMAGE_NAME + ":" + amo["image_version"]
 
@@ -223,7 +231,8 @@ def setup_node(ssh, amo, node, target, peer):
             local_path = os.path.join(DATA_PATH + "/" + target + "/", f)
             remote_path = os.path.join(orch_remote_path, f)
 
-            if os.path.isfile(local_path): ssh_transfer(ssh, local_path, remote_path)
+            if os.path.isfile(local_path):
+                ssh_transfer(ssh, local_path, remote_path)
 
         genesis_file = amo["genesis_file"]
 
@@ -233,10 +242,10 @@ def setup_node(ssh, amo, node, target, peer):
         ssh_transfer(ssh, local_path, remote_path)
 
         print("[%s] execute 'setup.sh' script" % (target))
-        command = "cd %s; sudo ./setup.sh -e %s /testnet/%s/ %s %s" % (orch_remote_path,
-                                                                             target_ip, target,
-                                                                             target, peer)
-        ssh_exec(ssh, command)
+        command = "cd %s; sudo ./setup.sh -e %s /testnet/%s/ %s %s" % \
+                (orch_remote_path, target_ip, target, target, peer)
+        output = ssh_exec(ssh, command)
+        node_id = output[len(output)-1].strip()
 
     except Exception as err:
         print("[%s] %s" % (target, err))
@@ -245,6 +254,7 @@ def setup_node(ssh, amo, node, target, peer):
 
     finally:
         ssh.close()
+        return node_id
         
 def ssh_transfer(ssh, local_path, remote_path):
     try:
@@ -270,7 +280,8 @@ def ssh_exec(ssh, command):
 
 def ssh_connect(ssh, hostname, username):
     try:
-        ssh.connect(hostname, username=username, key_filename=SSH_PRIVKEY_PATH)
+        ssh.connect(hostname, username=username,
+                key_filename=config['client']['ssh_key_path'])
     except Exception as error:
         print(error)
         exit(1)
@@ -278,12 +289,23 @@ def ssh_connect(ssh, hostname, username):
     return ssh
 
 def main():
-    # get data from json file:
+    global config
+    # read config from json file:
     with open(CONFIG_PATH) as file:
-        data = json.load(file)
+        config = json.load(file)
 
-    nodes = data["nodes"]
-    amo = data["amo"]
+    if 'client' in config:
+        client = config['client']
+        if 'ssh_key_path' in client:
+            if client['ssh_key_path'][0] is not '/':
+                client['ssh_key_path'] = os.environ['HOME'] + '/' \
+                        + client['ssh_key_path']
+        else:
+            client['ssh_key_path'] = DEFAULT_KEY_PATH
+    else:
+        client = {"ssh_key_path": DEFAULT_KEY_PATH}
+    nodes = config["nodes"]
+    amo = config["amo"]
 
     # prepare ssh module
     ssh = paramiko.SSHClient()
