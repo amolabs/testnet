@@ -14,7 +14,7 @@ CONFIG_PATH =  ORCH_PATH + "/config.json"
 DATA_PATH = ORCH_PATH + "/data"
 DEFAULT_KEY_PATH = os.environ["HOME"] + "/.ssh/id_rsa"
 
-SLEEP_TIME = 3 
+SLEEP_TIME = 0.5 
 
 IMAGE_NAME = "amolabs/amod"
 
@@ -152,12 +152,19 @@ def bootstrap(ssh, node, image_version, target):
         command = "sudo ./orchestration/run.sh /testnet/%s/ %s" % (target, image_version)
         ssh_exec(ssh, command)
     
-        print("[%s] sleep %d seconds" % (target, SLEEP_TIME))
-        time.sleep(SLEEP_TIME)
-
-        print("[%s] check status" % (target))
+        print("[%s] check docker status" % (target))
         command = "sudo docker inspect " + target
         ssh_exec(ssh, command)
+
+        print("[%s] check rpc connection" % (target), end = ' ', flush = True)
+        err = None
+        command = "curl --fail --silent localhost:26657"
+        while err is None or err == 52:
+            print(".", end = ' ', flush = True)
+            result, err = ssh_exec(ssh, command)
+            time.sleep(SLEEP_TIME)
+
+        print("FULLY UP!")
 
     except Exception as err:
         print("[%s] %s" % (target, err))
@@ -199,7 +206,8 @@ def setup_node(ssh, amo, node, target, peer):
         print("[%s] connected to %s" % (target, target_ip))
 
         command = "pwd"
-        orch_remote_path = ssh_exec(ssh, command)[0].strip() + "/orchestration"
+        output, _ = ssh_exec(ssh, command)
+        orch_remote_path = output[0].strip() + "/orchestration"
         print("[%s] creating remote path: %s" % (target, orch_remote_path))
         command = "mkdir -p %s" % orch_remote_path
         ssh_exec(ssh, command)
@@ -244,7 +252,7 @@ def setup_node(ssh, amo, node, target, peer):
         print("[%s] execute 'setup.sh' script" % (target))
         command = "cd %s; sudo ./setup.sh -e %s /testnet/%s/ %s %s" % \
                 (orch_remote_path, target_ip, target, target, peer)
-        output = ssh_exec(ssh, command)
+        output, _ = ssh_exec(ssh, command)
         node_id = output[len(output)-1].strip()
 
     except Exception as err:
@@ -269,14 +277,11 @@ def ssh_exec(ssh, command):
     try:
         stdin, stdout, stderr = ssh.exec_command(command)
 
-        if stdout.channel.recv_exit_status(): 
-            raise Exception("couldn't execute: %s" % (command))
-
     except Exception as err:
         print(err)
         exit(1)
 
-    return stdout.readlines()
+    return stdout.readlines(), stdout.channel.recv_exit_status()
 
 def ssh_connect(ssh, hostname, username):
     try:

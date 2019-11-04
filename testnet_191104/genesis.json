@@ -28,6 +28,9 @@
     }
   ],
   "app_state": {
+	"config": {
+        "lockup_period": 3600
+	},
     "balances": [
       {
         "owner": "BEFF22606A9FB730455736E7B33C846171F2865C",
