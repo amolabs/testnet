@@ -161,18 +161,11 @@ def bootstrap(ssh, node, image_version, target):
         ssh_exec(ssh, command)
     
         print("[%s] check docker status" % (target))
-        command = "sudo docker inspect " + target
+        comman = "sudo docker inspect " + target
         ssh_exec(ssh, command)
 
         print("[%s] check rpc connection" % (target), end = ' ', flush = True)
-        err = None
-        command = "curl --fail --silent localhost:26657"
-        while err is None or err == 52:
-            print(".", end = ' ', flush = True)
-            result, err = ssh_exec(ssh, command)
-            time.sleep(SLEEP_TIME)
-
-        print("FULLY UP!")
+        check_status(ssh)
 
     except Exception as err:
         print("[%s] %s" % (target, err))
@@ -215,7 +208,7 @@ def setup_node(ssh, amo, node, target, peer):
 
         command = "pwd"
         output, _ = ssh_exec(ssh, command)
-        orch_remote_path = output[0].strip() + "/orchestration"
+        orch_remote_path = output.readlines()[0].strip() + "/orchestration"
         print("[%s] creating remote path: %s" % (target, orch_remote_path))
         command = "mkdir -p %s" % orch_remote_path
         ssh_exec(ssh, command)
@@ -261,6 +254,7 @@ def setup_node(ssh, amo, node, target, peer):
         command = "cd %s; sudo ./setup.sh -e %s /testnet/%s/ %s %s" % \
                 (orch_remote_path, target_ip, target, target, peer)
         output, _ = ssh_exec(ssh, command)
+        output = output.readlines()
         node_id = output[len(output)-1].strip()
 
     except Exception as err:
@@ -272,6 +266,16 @@ def setup_node(ssh, amo, node, target, peer):
         ssh.close()
         return node_id
         
+def check_status(ssh):
+    command = "curl localhost:26657/status"
+    result, _ = ssh_exec(ssh, command)
+    while(len(result.read()) == 0):
+        print(".", end = ' ', flush = True)
+        result, _ = ssh_exec(ssh, command)
+        time.sleep(SLEEP_TIME)
+    
+    print("FULLY UP!")
+
 def ssh_transfer(ssh, local_path, remote_path):
     try:
         t = ssh.open_sftp()
@@ -289,7 +293,7 @@ def ssh_exec(ssh, command):
         print(err)
         exit(1)
 
-    return stdout.readlines(), stdout.channel.recv_exit_status()
+    return stdout, stdout.channel.recv_exit_status()
 
 def ssh_connect(ssh, hostname, username):
     try:
