@@ -24,7 +24,7 @@ AMOCLI = AMOCLICMD + ' ' + AMOCLIOPT
 
 ONEAMO = 1000000000000000000
 
-def up(ssh, amo, nodes, only_boot):
+def all_up(ssh, amo, nodes, only_boot):
     nodes = {**nodes}
     rpc_addr = nodes["val1"]["ip_addr"] + ":26657"
     image_version = amo["image_version"] 
@@ -74,7 +74,7 @@ def up(ssh, amo, nodes, only_boot):
 
     nodes.clear()
 
-def down(ssh, nodes):
+def all_down(ssh, nodes):
     nodes = {**nodes}
 
     target = "val1"
@@ -91,7 +91,7 @@ def down(ssh, nodes):
     
     nodes.clear()
 
-def setup(ssh, amo, nodes):
+def all_setup(ssh, amo, nodes):
     nodes = {**nodes}
 
     target = "val1"
@@ -322,17 +322,17 @@ def main():
     cmd = sys.argv[1]
     
     if cmd == "init":
-        up(ssh, amo, nodes, only_boot=False)
+        all_up(ssh, amo, nodes, only_boot=False)
     elif cmd == "up": 
-        up(ssh, amo, nodes, only_boot=True)
+        all_up(ssh, amo, nodes, only_boot=True)
     elif cmd == "down": 
-        down(ssh, nodes)
+        all_down(ssh, nodes)
     elif cmd == "setup":
-        setup(ssh, amo, nodes)
+        all_setup(ssh, amo, nodes)
     elif cmd == "reset":
-        down(ssh, nodes)
-        setup(ssh, amo, nodes)
-        up(ssh, amo, nodes, only_boot=False)
+        all_down(ssh, nodes)
+        all_setup(ssh, amo, nodes)
+        all_up(ssh, amo, nodes, only_boot=False)
     else:
         usage()
 
