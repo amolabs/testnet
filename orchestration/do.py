@@ -114,6 +114,14 @@ def all_setup(ssh, amo, nodes):
 
     nodes.clear()
 
+def all_exec(ssh, amo, nodes, exec_cmd):
+    for name, node in nodes.items():
+        print("[%s] connecting to %s" % (name, node['ip_addr']))
+        ssh = ssh_connect(ssh, node['ip_addr'], node['username'])
+        print("[%s] executing '%s'" % (name, exec_cmd))
+        out, _ = ssh_exec(ssh, exec_cmd)
+        print(''.join(out))
+
 def amocli_exec(tx_type, rpc_addr, username, dest_addr, amount):
     try:
         command = "%s --rpc %s tx --user %s %s %s %d" % \
@@ -333,6 +341,12 @@ def main():
         all_down(ssh, nodes)
         all_setup(ssh, amo, nodes)
         all_up(ssh, amo, nodes, only_boot=False)
+    elif cmd == "exec":
+        # TODO: use getopt
+        if len(sys.argv) >= 3:
+            all_exec(ssh, amo, nodes, sys.argv[2])
+        else:
+            usage()
     else:
         usage()
 
@@ -340,7 +354,7 @@ def usage():
     print("Usage: python3 %s { init | up | down | setup | reset }" % (sys.argv[0]))
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2: 
+    if len(sys.argv) < 2: 
         usage()
         exit(1)
 
