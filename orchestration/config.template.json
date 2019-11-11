@@ -1,29 +1,25 @@
 {
 	"client": {
-		"ssh_key_path": "__ssh_private_key__"
+		"ssh_key_path": "__ssh_private_key__",
+		"ssh_username": "__ssh_username__"
 	},
 	"amo": {
 		"genesis_file": "__genesis_file_path__",
 		"image_version": "__docker_image_version__",
-		"faucet_user": "__amo_faucet_account__"
+		"faucet_user": "__amo_faucet_account__",
+		"p2p_port": 26656
 	},
 	"nodes": {
 		"seed": {
-			"username": "__ssh_username__",
 			"ip_addr": "123.456.789.0",
-			"p2p_port": 26656,
 			"amo_addr": "__amo_address_to_stake_with__"
 		},
 		"val1": {
-			"username": "__ssh_username__",
 			"ip_addr": "123.456.789.1",
-			"p2p_port": 26656,
 			"amo_addr": "__amo_address_to_stake_with__"
 		},
 		"val2": {
-			"username": "__ssh_username__",
 			"ip_addr": "123.456.789.2",
-			"p2p_port": 26656,
 			"amo_addr": "__amo_address_to_stake_with__"
 		}
 	}
