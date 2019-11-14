@@ -41,6 +41,8 @@ ONEAMO = 1000000000000000000
 #########################
 
 def all_up(ssh, amo, nodes):
+    b_time = time.time()
+
     nodes = {**nodes}
     image_version = amo["image_version"] 
     
@@ -51,7 +53,11 @@ def all_up(ssh, amo, nodes):
     print()
     nodes.clear()
 
+    return time.time() - b_time
+
 def all_down(ssh, nodes):
+    b_time = time.time()
+
     nodes = {**nodes}
 
     # seed, val... : parallel
@@ -61,7 +67,11 @@ def all_down(ssh, nodes):
     print()
     nodes.clear()
 
+    return time.time() - b_time
+
 def all_faucet_stake(ssh, amo, nodes):
+    b_time = time.time()
+
     nodes = {**nodes}
    
     rpc_addr = nodes["val1"]["ip_addr"] + ":26657"
@@ -89,7 +99,11 @@ def all_faucet_stake(ssh, amo, nodes):
     print()
     nodes.clear()
 
+    return time.time() - b_time
+
 def all_setup(ssh, amo, nodes):
+    b_time = time.time()
+
     nodes = {**nodes}
 
     print("setup nodes")
@@ -125,14 +139,24 @@ def all_setup(ssh, amo, nodes):
     print()
     nodes.clear()
 
+    return time.time() - b_time
+
 def all_exec(ssh, exec_cmd):
+    b_time = time.time()
+
     # seed, val... : parallel
     ssh_exec(ssh, exec_cmd, wait=True, echo=True)
 
+    return time.time() - b_time
+
 def all_scp(ssh, local_path, remote_path):
+    b_time = time.time()
+
     # seed, val... : parallel
     greenlets = ssh_transfer(ssh, local_path, remote_path)
     joinall(greenlets) # wait until transfer is done
+
+    return time.time() - b_time
 
 def amocli_exec(tx_type, rpc_addr, username, dest_addr, amount):
     try:
@@ -373,41 +397,45 @@ def main():
             allow_agent=False)
 
     cmd = sys.argv[1]
-    
+   
+    exec_time = 0
+
     if cmd == "init":
-        all_up(ssh, amo, nodes)
-        all_faucet_stake(ssh, amo, nodes)
+        exec_time += all_up(ssh, amo, nodes)
+        exec_time += all_faucet_stake(ssh, amo, nodes)
     elif cmd == "up": 
-        all_up(ssh, amo, nodes)
+        exec_time += all_up(ssh, amo, nodes)
     elif cmd == "down": 
-        all_down(ssh, nodes)
+        exec_time += all_down(ssh, nodes)
     elif cmd == "restart":
-        all_down(ssh, nodes)
+        exec_time += all_down(ssh, nodes)
         ssh.hosts = hosts # reset
-        all_up(ssh, amo, nodes)
+        exec_time += all_up(ssh, amo, nodes)
     elif cmd == "setup":
-        all_setup(ssh, amo, nodes)
+        exec_time += all_setup(ssh, amo, nodes)
     elif cmd == "reset":
-        all_down(ssh, nodes)
+        exec_time += all_down(ssh, nodes)
         ssh.hosts = hosts # reset
-        all_setup(ssh, amo, nodes)
+        exec_time += all_setup(ssh, amo, nodes)
         ssh.hosts = hosts # reset
-        all_up(ssh, amo, nodes)
+        exec_time += all_up(ssh, amo, nodes)
         ssh.hosts = hosts # reset
-        all_faucet_stake(ssh, amo, nodes)
+        exec_time += all_faucet_stake(ssh, amo, nodes)
     elif cmd == "scp":
         if len(sys.argv) == 4:
-           all_scp(ssh, sys.argv[2], sys.argv[3]) 
+           exec_time += all_scp(ssh, sys.argv[2], sys.argv[3]) 
         else:
             usage()
     elif cmd == "exec":
         # TODO: use getopt
         if len(sys.argv) >= 3:
-            all_exec(ssh, sys.argv[2])
+            exec_time += all_exec(ssh, sys.argv[2])
         else:
             usage()
     else:
         usage()
+
+    print("execution time:", exec_time, "s")
 
 def usage():
     print("Usage: python3 %s { init | up | down | restart | setup | reset | exec | scp }" % (sys.argv[0]))

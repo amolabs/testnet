@@ -43,18 +43,26 @@ docker logs -f <node_name>
 
 ## Using orchestration/do.py
 This python script provides the following features required for orchestrating
-AMO nodes.
+AMO nodes in parallel mode.
 
 ### Features
 - `init`: boot nodes, distribute coins and stake them 
 - `up`: just boot nodes
 - `down`: shutdown nodes
+- `restart`: process sequentially `down` -> `up`
 - `setup`: copy config files located under `orchestration/data/<target>` to each target node
 - `reset`: process sequentially `down` -> `reset` -> `init`
+- `exec`: execute user input in nodes
+- `scp`: copy files from local path to remote path in ssh
+
+### Install required packages
+```bash
+pip3 install -r requirements.txt
+```
 
 ### Usage
 ```bash
-./orchestration/do.py {init | up | down | setup | reset }
+./orchestration/do.py { init | up | down | restart | setup | reset | exec | scp }
 ```
 
 ### Requiries

@@ -1,0 +1,3 @@
+gevent==1.4.0
+parallel_ssh==1.9.1
+pssh==2.3.1
