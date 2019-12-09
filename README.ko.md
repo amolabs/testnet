@@ -42,18 +42,21 @@ docker logs -f <node_name>`
 ```
 
 ## orchestration/do.py 사용
-이 파이썬 스트립트는 AMO 노드들을 오케스트레이션 하기 위한 다음 기능들을 제공한다.
+이 파이썬 스트립트는 AMO 노드들을 병렬로 오케스트레이션 하기 위한 다음 기능들을 제공한다.
 
 ### 기능
 - `init`: 노드 실행, 코인 분배 그리고 코인 stake
 - `up`: 단순 노드 실행
 - `down`: 노드 종료
+- `restart`: `down` -> `up` 순차적으로 실행
 - `setup`: `orchestration/data/<target>` 아래에 위치한 config 파일들 해당 target 노드에 복사
-- `reset`: `down` -> `reset` -> `init` 순차적으로 실행 
+- `reset`: `down` -> `setup` -> `init` 순차적으로 실행 
+- `exec`: 사용자 입력 명령어 노드들에서 동시 실행
+- `scp`: 로컬 경로의 파일들을 원격 경로에 ssh 로 복사
 
 ### 사용법
 ```bash
-./orchestration/do.py {init | up | down | setup | reset }
+./orchestration/do.py { init | up | down | restart | setup | reset | exec | scp }
 ```
 
 ### 필수사항

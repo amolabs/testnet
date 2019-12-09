@@ -1,0 +1,48 @@
+{
+  "genesis_time": "2019-12-09T05:00:00.000000Z",
+  "chain_id": "amo-testnet-191209",
+  "consensus_params": {
+    "block": {
+      "max_bytes": "22020096",
+      "max_gas": "-1",
+      "time_iota_ms": "1000"
+    },
+    "evidence": {
+      "max_age": "100000"
+    },
+    "validator": {
+      "pub_key_types": [
+        "ed25519"
+      ]
+    }
+  },
+  "validators": [
+    {
+      "address": "374F91DF66EC65067BA172EEB26A121C65E14DD3",
+      "pub_key": {
+        "type": "tendermint/PubKeyEd25519",
+        "value": "Ap8YFoIIsjq4kD/kHjvyTkME1qn7IZqEk8r8tKArE/E="
+      },
+      "power": "10",
+      "name": ""
+    }
+  ],
+  "app_state": {
+    "config": {
+      "penalty_ratio_m": 0.1,
+      "penalty_ratio_l": 0.01,
+      "laziness_counter_window": 100, 
+      "laziness_threshold": 0.9,
+      "block_bound_tx_grace_period": 100,
+      "lockup_period": 3600 
+    },
+    "balances": [
+      {
+        "owner": "BEFF22606A9FB730455736E7B33C846171F2865C",
+        "amount": "20000000000000000000000000000"
+      }
+    ],
+    "stakes": []
+  },
+  "app_hash": ""
+}
