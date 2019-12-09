@@ -160,7 +160,7 @@ def all_scp(ssh, local_path, remote_path):
 
 def amocli_exec(tx_type, rpc_addr, username, dest_addr, amount):
     try:
-        command = "%s --rpc %s tx --user %s %s %s %d" % \
+        command = "%s --rpc %s tx --broadcast=commit --user %s %s %s %d" % \
                 (AMOCLI, rpc_addr, username, tx_type, dest_addr, amount)
     
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
