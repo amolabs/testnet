@@ -24,6 +24,7 @@ AMOCLIOPT = "--json"
 AMOCLI = AMOCLICMD + ' ' + AMOCLIOPT
 
 ONEAMO = 1000000000000000000
+STAKEAMOUNT = "1000000000000000000000000"
 
 #########################
 # Support Parallel Mode #
@@ -73,9 +74,10 @@ def all_faucet_stake(ssh, amo, nodes):
     b_time = time.time()
 
     nodes = {**nodes}
+
+    amount = STAKEAMOUNT
    
     rpc_addr = nodes["val1"]["ip_addr"] + ":26657"
-    amount = 100 * ONEAMO
 
     if "seed" in nodes:
         del nodes["seed"]
@@ -91,9 +93,9 @@ def all_faucet_stake(ssh, amo, nodes):
         if val_pubkey is None:
             return
 
-        print("faucet to %s: %d" % (target, amount)) 
+        print("faucet to %s: %s" % (target, amount)) 
         transfer(rpc_addr, amo["faucet_user"], node["amo_addr"], amount) 
-        print("stake for %s: %d" % (target, amount)) 
+        print("stake for %s: %s" % (target, amount)) 
         stake(rpc_addr, target, val_pubkey, amount)
 
     print()
@@ -160,7 +162,7 @@ def all_scp(ssh, local_path, remote_path):
 
 def amocli_exec(tx_type, rpc_addr, username, dest_addr, amount):
     try:
-        command = "%s --rpc %s tx --broadcast=commit --user %s %s %s %d" % \
+        command = "%s --rpc %s tx --broadcast=commit --user %s %s %s %s" % \
                 (AMOCLI, rpc_addr, username, tx_type, dest_addr, amount)
     
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
