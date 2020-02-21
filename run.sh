@@ -54,10 +54,10 @@ echo -n "Removing existing container..."
 docker rm "$NAME" > /dev/null 2>&1
 echo "done"
 if [ "$FG" == 1 ]; then
-	docker run $DOCKEROPT -v $DATAROOT/tendermint:/tendermint:Z -v $DATAROOT/amo:/amo:Z --name "$NAME" -p 26656-26657:26656-26657 "$IMAGE":"$VERSION"
+	docker run $DOCKEROPT -v $DATAROOT/amo:/amo:Z --name "$NAME" -p 26656-26657:26656-26657 "$IMAGE":"$VERSION"
 else
 	echo -n "Launching new container..."
-	CONTID=$(docker run $DOCKEROPT -v $DATAROOT/tendermint:/tendermint:Z -v $DATAROOT/amo:/amo:Z --name "$NAME" -p 26656-26657:26656-26657 "$IMAGE":"$VERSION")
+	CONTID=$(docker run $DOCKEROPT -v $DATAROOT/amo:/amo:Z --name "$NAME" -p 26656-26657:26656-26657 "$IMAGE":"$VERSION")
 	if [ $? == 0 ]; then echo "done"; fi
 	echo "Container id = $CONTID"
 fi

@@ -47,9 +47,8 @@ echo "extaddr   = $EXTADDR"
 
 rm -rf $DATAROOT
 
-mkdir -p $DATAROOT/amo
-mkdir -p $DATAROOT/tendermint/config
-mkdir -p $DATAROOT/tendermint/data
+mkdir -p $DATAROOT/amo/config
+mkdir -p $DATAROOT/amo/data
 cp -f config.toml.in config.toml
 sed -e s/@moniker@/$MONIKER/ -i.tmp config.toml
 sed -e s/@peers@/$PEERS/ -i.tmp config.toml
@@ -59,26 +58,26 @@ else
 	sed -e s/@external@// -i.tmp config.toml
 fi
 
-mv -f config.toml $DATAROOT/tendermint/config/
+mv -f config.toml $DATAROOT/amo/config/
 if [ $MODE == "testnet" ]; then
-	cp -f genesis.json $DATAROOT/tendermint/config/
+	cp -f genesis.json $DATAROOT/amo/config/
 else
 	# this will create a new arbitrary genesis file
-	rm -f $DATAROOT/tendermint/config/genesis.json
+	rm -f $DATAROOT/amo/config/genesis.json
 fi
 
 if [ -f node_key.json ]; then
-	cp -f node_key.json $DATAROOT/tendermint/config/
+	cp -f node_key.json $DATAROOT/amo/config/
 fi
 if [ -f priv_validator_key.json ]; then
-	cp -f priv_validator_key.json $DATAROOT/tendermint/config/
+	cp -f priv_validator_key.json $DATAROOT/amo/config/
 fi
-if [ ! -f $DATAROOT/tendermint/data/priv_validator_state.json ]; then
-	cp priv_validator_state.json $DATAROOT/tendermint/data/
+if [ ! -f $DATAROOT/amo/data/priv_validator_state.json ]; then
+	cp priv_validator_state.json $DATAROOT/amo/data/
 fi
 
-docker run -it --rm -v $DATAROOT/tendermint:/tendermint:Z amolabs/amod /usr/bin/tendermint --home /tendermint init
-docker run --rm -v $DATAROOT/tendermint:/tendermint:Z amolabs/amod /usr/bin/tendermint --home /tendermint show_node_id 2> /dev/null
+docker run -it --rm -v $DATAROOT/amo:/amo:Z amolabs/amod /usr/bin/amod --home /amo tendermint init
+docker run --rm -v $DATAROOT/amo:/amo:Z amolabs/amod /usr/bin/amod --home /amo tendermint show_node_id 2> /dev/null
 
 rm -f *.tmp
 
