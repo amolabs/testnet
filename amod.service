@@ -1,0 +1,13 @@
+[Unit]
+Description=AMO Daemon
+
+[Service]
+Type=simple
+ExecStart=/root/amod_run.sh @dataroot@
+SyslogFacility=daemon
+SyslogLevel=info
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+

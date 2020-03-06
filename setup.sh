@@ -42,13 +42,16 @@ fi
 
 echo "data root = $DATAROOT"
 echo "moniker   = $MONIKER"
+echo "version 	= $VERSION"
 echo "peers     = $PEERS"
 echo "extaddr   = $EXTADDR"
 
+# reset DATAROOT
 rm -rf $DATAROOT
-
 mkdir -p $DATAROOT/amo/config
 mkdir -p $DATAROOT/amo/data
+
+# build config.toml
 cp -f config.toml.in config.toml
 sed -e s/@moniker@/$MONIKER/ -i.tmp config.toml
 sed -e s/@peers@/$PEERS/ -i.tmp config.toml
@@ -58,6 +61,15 @@ else
 	sed -e s/@external@// -i.tmp config.toml
 fi
 
+# prepare amod.service 
+cp run.sh /root/amod_run.sh
+sed -e s#@dataroot@#$DATAROOT/amo# -i.tmp amod.service
+cp amod.service /etc/systemd/system/amod.service
+
+# enable amod.service
+systemctl enable amod
+
+# put config.toml into DATAROOT
 mv -f config.toml $DATAROOT/amo/config/
 if [ $MODE == "testnet" ]; then
 	cp -f genesis.json $DATAROOT/amo/config/
@@ -66,6 +78,7 @@ else
 	rm -f $DATAROOT/amo/config/genesis.json
 fi
 
+# put node_key.json, priv_validator_key.json, priv_validator_state.json into DATAROOT
 if [ -f node_key.json ]; then
 	cp -f node_key.json $DATAROOT/amo/config/
 fi
@@ -76,8 +89,11 @@ if [ ! -f $DATAROOT/amo/data/priv_validator_state.json ]; then
 	cp priv_validator_state.json $DATAROOT/amo/data/
 fi
 
-docker run -it --rm -v $DATAROOT/amo:/amo:Z amolabs/amod /usr/bin/amod --home /amo tendermint init
-docker run --rm -v $DATAROOT/amo:/amo:Z amolabs/amod /usr/bin/amod --home /amo tendermint show_node_id 2> /dev/null
+# init tendermint
+/usr/bin/amod --home $DATAROOT/amo tendermint init
+
+# show tendermint node id
+/usr/bin/amod --home $DATAROOT/amo tendermint show_node_id 2> /dev/null
 
 rm -f *.tmp
 

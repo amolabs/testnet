@@ -15,9 +15,12 @@ CONFIG_PATH =  ORCH_PATH + "/config.json"
 DATA_PATH = ORCH_PATH + "/data"
 DEFAULT_KEY_PATH = os.environ["HOME"] + "/.ssh/id_rsa"
 
+ORCH_REMOTE_PATH="orchestration"
+DATAROOT_REMOTE_PATH="/testnet"
+
 SLEEP_TIME = 0.5 
 
-IMAGE_NAME = "amolabs/amod"
+RELEASE_URL = "https://github.com/amolabs/amoabci/releases/download"
 
 AMOCLICMD = "amocli"
 AMOCLIOPT = "--json"
@@ -45,7 +48,7 @@ def all_up(ssh, amo, nodes):
     b_time = time.time()
 
     nodes = {**nodes}
-    image_version = amo["image_version"] 
+    image_version = amo["version"] 
     
     # seed, val... : parallel
     print("bootstrap nodes")
@@ -63,7 +66,7 @@ def all_down(ssh, nodes):
 
     # seed, val... : parallel
     print("stop nodes")
-    docker_stop(ssh, nodes)
+    stop_node(ssh, nodes)
     
     print()
     nodes.clear()
@@ -109,6 +112,9 @@ def all_setup(ssh, amo, nodes):
     nodes = {**nodes}
 
     print("setup nodes")
+
+    # install on seed, val... : parallel
+    install_node(ssh, amo, nodes)
         
     # transfer to seed, val... : parallel
     transfer_config(ssh, amo, nodes) 
@@ -132,7 +138,7 @@ def all_setup(ssh, amo, nodes):
         node_id = setup_node(ssh, amo, nodes_tmp, peer)
         peer = node_id + "@" + nodes[target]["ip_addr"] + ":" + str(amo["p2p_port"])
         del nodes[target] # exclude from loop
-
+    
     # val... : parallel
     ssh.hosts = [h["ip_addr"] for h in nodes.values()]
 
@@ -188,13 +194,8 @@ def bootstrap(ssh, nodes, image_version):
     try:
         host_args = get_host_args(ssh.hosts, nodes) 
 
-        print("execute 'run.sh' script", end='', flush=True)
-        command = "./orchestration/run.sh /testnet/%(target)s/ " + image_version
-        ssh_exec(ssh, command, host_args=host_args, wait=True)
-        print(" - DONE")
-
-        print("check docker status", end='', flush=True)
-        comman = "docker inspect %(target)s"
+        print("start amod sercive", end='', flush=True)
+        command = "systemctl start amod"
         ssh_exec(ssh, command, host_args=host_args, wait=True)
         print(" - DONE")
 
@@ -205,13 +206,34 @@ def bootstrap(ssh, nodes, image_version):
         print(err)
         exit(1)
 
-def docker_stop(ssh, nodes):
+def stop_node(ssh, nodes):
     try:
         host_args = get_host_args(ssh.hosts, nodes) 
 
-        print("stop docker container:", ssh.hosts, end='', flush=True)
-        command = "docker stop %(target)s"
+        print("stop amod service:", ssh.hosts, end='', flush=True)
+        command = "systemctl stop amod"
         ssh_exec(ssh, command, host_args=host_args, wait=True)
+        print(" - DONE")
+
+    except Exception as err:
+        print(err)
+        exit(1)
+
+def install_node(ssh, amo, nodes):
+    try:
+        command = "wget %s -O ./%s" % (get_amod_url(amo["version"]), get_amod_tar(amo["version"]))
+        print(command + ":", ssh.hosts, end='', flush=True)
+        ssh_exec(ssh, command, wait=True)
+        print(" - DONE")
+
+        command = "tar -xzf %s" % (get_amod_tar(amo["version"]))
+        print(command + ":", ssh.hosts, end='', flush=True)
+        ssh_exec(ssh, command, wait=True)
+        print(" - DONE")
+
+        command = "cp amod /usr/bin/amod"
+        print(command + ":", ssh.hosts, end='', flush=True)
+        ssh_exec(ssh, command, wait=True)
         print(" - DONE")
 
     except Exception as err:
@@ -220,9 +242,6 @@ def docker_stop(ssh, nodes):
 
 def transfer_config(ssh, amo, nodes):
     try:
-        orch_remote_path = "orchestration/"
-        docker_image = IMAGE_NAME + ":" + amo["image_version"]
-       
         genesis_source_path = amo["genesis_file"]
         genesis_dest_path = os.path.join(CURRENT_PATH, "genesis.json")
 
@@ -232,16 +251,12 @@ def transfer_config(ssh, amo, nodes):
 
         if err: raise Exception(err)
 
-        command = "docker pull %s" % (docker_image)
-        print(command + ":", ssh.hosts, end='', flush=True)
-        ssh_exec(ssh, command, wait=True)
-        print(" - DONE")
-
         print("prepare config files to transfer:", ssh.hosts, end='', flush=True)
         for f in os.listdir(CURRENT_PATH):
             if not os.path.isfile(os.path.join(CURRENT_PATH, f)):
                 continue
-            if not f.endswith(".sh") and not f.endswith(".in") and not f.endswith(".json"):
+            if not f.endswith(".sh") and not f.endswith(".in") and \
+               not f.endswith(".json") and not f.endswith(".service"):
                 continue
 
             for target in nodes.keys():
@@ -265,7 +280,7 @@ def transfer_config(ssh, amo, nodes):
             ssh.hosts = [nodes[target]["ip_addr"]]
 
             local_path = os.path.join(DATA_PATH, target)
-            remote_path = orch_remote_path
+            remote_path = ORCH_REMOTE_PATH 
            
             greenlet = ssh_transfer(ssh, local_path, remote_path)[0]
             greenlets.append(greenlet)
@@ -287,11 +302,12 @@ def transfer_config(ssh, amo, nodes):
 def setup_node(ssh, amo, nodes, peer):
     node_id = ''
     try:
-        orch_remote_path = "orchestration"
         host_args = get_host_args(ssh.hosts, nodes) 
 
         print("execute 'setup.sh' script:", ssh.hosts, end='', flush=True)
-        command = "cd " + orch_remote_path + "; ./setup.sh -e %(ip)s /testnet/%(target)s/ %(target)s " + peer
+        command = "cd " + ORCH_REMOTE_PATH + "; " + \
+                "./setup.sh -e %(ip)s " + DATAROOT_REMOTE_PATH + \
+                "/%(target)s/ %(target)s " + peer
         output = ssh_exec(ssh, command, host_args=host_args, wait=True)
         print(" - DONE")
 
@@ -305,6 +321,12 @@ def setup_node(ssh, amo, nodes, peer):
 
     finally:
         return node_id
+
+def get_amod_url(version):
+    return "%s/v%s/%s" % (RELEASE_URL, version, get_amod_tar(version))
+
+def get_amod_tar(version):
+    return "amod-%s-linux-x86_64.tar.gz" % (version)
         
 def check_status(ssh):
     ok_num = 0

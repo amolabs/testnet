@@ -5,7 +5,7 @@
 	},
 	"amo": {
 		"genesis_file": "__genesis_file_path__",
-		"image_version": "__docker_image_version__",
+		"version": "__amod_version__",
 		"faucet_user": "__amo_faucet_account__",
 		"p2p_port": 26656
 	},
