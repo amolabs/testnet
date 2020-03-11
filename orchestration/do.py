@@ -231,7 +231,7 @@ def install_node(ssh, amo, nodes):
         ssh_exec(ssh, command, wait=True)
         print(" - DONE")
 
-        command = "cp amod /usr/bin/amod"
+        command = "cp -f amod /usr/bin/amod"
         print(command + ":", ssh.hosts, end='', flush=True)
         ssh_exec(ssh, command, wait=True)
         print(" - DONE")
@@ -306,8 +306,8 @@ def setup_node(ssh, amo, nodes, peer):
 
         print("execute 'setup.sh' script:", ssh.hosts, end='', flush=True)
         command = "cd " + ORCH_REMOTE_PATH + "; " + \
-                "./setup.sh -e %(ip)s " + DATAROOT_REMOTE_PATH + \
-                "/%(target)s/ %(target)s " + peer
+                "./setup.sh -e %(ip)s " + \
+                DATAROOT_REMOTE_PATH + "/%(target)s %(target)s " + peer
         output = ssh_exec(ssh, command, host_args=host_args, wait=True)
         print(" - DONE")
 
@@ -383,8 +383,11 @@ def ssh_exec(ssh, command, host_args=None, wait=False, echo=False):
 
         if echo == True:
             for host, host_output in output.items():
+                print("host=%s" % host)
                 for line in host_output.stdout:
-                    print("host=%s, command=%s, output=%s" % (host, command, line))
+                    print("%s" % line)
+
+                print()
 
         return output
 
