@@ -22,12 +22,5 @@ if [ -z "$DATAROOT" ]; then
 fi
 
 echo "data root 	= $DATAROOT"
-NAME=$(basename $DATAROOT)
-if [ -z "$NAME" ]; then
-	echo "Could not determine moniker name. Using 'bogus'..."
-	NAME=bogus
-	exit
-fi
-echo "moniker name = $NAME"
 
 /usr/bin/amod run --home $DATAROOT 
