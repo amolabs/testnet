@@ -16,12 +16,18 @@
 # - wget relase.download_url -O release.name
 # - tar -xzf latest.assets[0].name
 # - cp -f amod /usr/bin/amod
+#
+# overall flow:
+# - check
+# - prepare
+# - standby
+# - upgrade
 
 # default
 NAME='AMO helper'
 PY='python3'
 INTERVAL=1 # sleep interval
-PROCESS_BAR_SIZE=60
+PROGRESS_BAR_SIZE=60
 
 usage() {
     echo "syntax: $0 <data_root>"
@@ -44,28 +50,69 @@ read_json() {
     echo $result
 }
 
-check_upgrade_protocol() {
-    # load upgrade_protocol_height from node config
-    query='{"jsonrpc": "2.0", "id": 0, "method": "abci_query", "params": {"path": "/config", "data": "6e756c6c"}}'
-    config=$(curl -s -H "Content-Type: application/json" -X POST -d "$query" localhost:26657)
-    if [ $? -ne 0 ]; then fail; fi
-    config=$(read_json "$config" "['result']['response']['value']" | base64 -D)
-    upgrade_protocol_height=$(read_json "$config" "['upgrade_protocol_height']")
-    
-    # load height and last_height from $DATAROOT/amo/data/state.json
-    state=$(cat $DATAROOT/amo/data/state.json)
-    height=$(read_json "$state" "['height']")
-    last_height=$(read_json "$state" "['last_height']")
+hide_cursor() {
+    echo -n `tput civis`
+}
+ 
+show_cursor() {
+    echo -n `tput cvvis`
+}
+
+progress_bar() {
+    begin=$1
+    end=$2
+    current=$3
+    current_pos=$(((current-begin)*PROGRESS_BAR_SIZE/(end-begin)))
+
+    echo -en "\r[$NAME] ["
+    for (( i = 0; i < PROGRESS_BAR_SIZE; i++ )); do
+        if [[ i -le current_pos ]]; then
+            echo -n "#"
+            continue
+        fi
+        printf "."
+    done 
+    echo -n "] $begin >> $current >> $end"
+}
+
+check() {
+    height=$1
+    upgrade_protocol_height=$2
 
     # pre-condition
     if [[ $height -gt $upgrade_protocol_height ]]; then
         print_h "no need to upgrade protocol"
         exit 0
     fi
+}
 
+prepare() {
+    print_h "get latest release info"
+    release=$(curl -s https://api.github.com/repos/amolabs/amoabci/releases/latest | sed 's/\\r\\n//')
+    if [ $? -ne 0 ]; then fail; fi
+    asset_url=$(read_json "$release" "['assets'][0]['browser_download_url']")
+    asset_name=$(read_json "$release" "['assets'][0]['name']")
+    
+    print_h "download latest release: $asset_name"
+    out=$(wget -q $asset_url -O $asset_name)
+    if [ $? -ne 0 ]; then fail; fi
+    
+    print_h "untar latest release: $asset_name"
+    out=$(tar -xzf $asset_name)
+    if [ $? -ne 0 ]; then fail; fi
+}
+
+standby() {
+    height=$1
+    last_height=$2
+    upgrade_protocol_height=$3
+
+    hide_cursor
+    begin=$height
+    end=$upgrade_protocol_height
     # wait until upgrade protocol condition matches
     while [[ $height -eq $last_height || $height -ne $upgrade_protocol_height ]]; do
-        print_h "height=$height, last_height=$last_height, upgrade_protocol_height=$upgrade_protocol_height"
+        progress_bar "$begin" "$end" "$height"
         
         state=$(cat $DATAROOT/amo/data/state.json)
         height=$(read_json "$state" "['height']")
@@ -73,6 +120,18 @@ check_upgrade_protocol() {
 
         sleep $INTERVAL
     done
+    show_cursor
+    echo
+}
+
+upgrade() {
+    print_h "copy latest amod"
+    out=$(sudo cp -f amod /usr/bin/amod)
+    if [ $? -ne 0 ]; then fail; fi
+
+    print_h "restart amod service"
+    out=$(sudo systemctl restart amod)
+    if [ $? -ne 0 ]; then fail; fi
 }
 
 DATAROOT=$1
@@ -83,23 +142,28 @@ fi
 
 print_h "dataroot=$DATAROOT"
 
-print_h "get latest release info"
-release=$(curl -s https://api.github.com/repos/amolabs/amoabci/releases/latest | sed 's/\\r\\n//')
+# load upgrade_protocol_height from node config
+query='{"jsonrpc": "2.0", "id": 0, "method": "abci_query", "params": {"path": "/config", "data": "6e756c6c"}}'
+config=$(curl -s -H "Content-Type: application/json" -X POST -d "$query" localhost:26657)
 if [ $? -ne 0 ]; then fail; fi
-asset_url=$(read_json "$release" "['assets'][0]['browser_download_url']")
-asset_name=$(read_json "$release" "['assets'][0]['name']")
-
-print_h "download latest release: $asset_name"
-out=$(wget -q $asset_url -O $asset_name)
-if [ $? -ne 0 ]; then fail; fi
-
-print_h "untar latest release: $asset_name"
-out=$(tar -xzf $asset_name)
-if [ $? -ne 0 ]; then fail; fi
+config=$(read_json "$config" "['result']['response']['value']" | base64 --decode)
+upgrade_protocol_height=$(read_json "$config" "['upgrade_protocol_height']")
+ 
+# load height and last_height from $DATAROOT/amo/data/state.json
+state=$(cat $DATAROOT/amo/data/state.json)
+height=$(read_json "$state" "['height']")
+last_height=$(read_json "$state" "['last_height']")
 
 print_h "check if protocol needs to get upgraded"
-check_upgrade_protocol
+check "$height" "$upgrade_protocol_height"
 
-print_h "copy latest amod"
-out=$(sudo cp -f amod /usr/bin/amod)
-if [ $? -ne 0 ]; then fail; fi
+print_h "prepare necessary things to upgrade protocol"
+prepare
+
+print_h "wait for height to reach upgrade protocol height"
+standby "$height" "$last_height" "$upgrade_protocol_height"
+
+print_h "execute protocol upgrade"
+upgrade
+
+print_h "successfully upgraded protocol"
