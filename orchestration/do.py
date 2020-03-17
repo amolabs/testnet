@@ -42,6 +42,7 @@ STAKEAMOUNT = "1000000000000000000000000"
 # * full parallel       #
 #   - all_up            #
 #   - all_down          #
+#   - all_upgrade       #
 #########################
 
 def all_up(ssh, amo, nodes):
@@ -68,6 +69,20 @@ def all_down(ssh, nodes):
     print("stop nodes")
     stop_node(ssh, nodes)
     
+    print()
+    nodes.clear()
+
+    return time.time() - b_time
+
+def all_upgrade(ssh, nodes):
+    b_time = time.time()
+
+    nodes = {**nodes}
+
+    # seed, val... : parallel
+    print("upgrade nodes")
+    upgrade_node(ssh, nodes)
+
     print()
     nodes.clear()
 
@@ -234,6 +249,20 @@ def install_node(ssh, amo, nodes):
         command = "cp -f amod /usr/bin/amod"
         print(command + ":", ssh.hosts, end='', flush=True)
         ssh_exec(ssh, command, wait=True)
+        print(" - DONE")
+
+    except Exception as err:
+        print(err)
+        exit(1)
+
+def upgrade_node(ssh, nodes):
+    try:
+        host_args = get_host_args(ssh.hosts, nodes) 
+
+        print("execute 'upgrade.sh' script:", ssh.hosts, end='', flush=True)
+        command = "cd " + ORCH_REMOTE_PATH + "; " + \
+                "./upgrade.sh " + DATAROOT_REMOTE_PATH + "/%(target)s"
+        ssh_exec(ssh, command, host_args=host_args, wait=True, echo=True)
         print(" - DONE")
 
     except Exception as err:
@@ -448,15 +477,17 @@ def main():
         exec_time += all_up(ssh, amo, nodes)
         ssh.hosts = hosts # reset
         exec_time += all_faucet_stake(ssh, amo, nodes)
-    elif cmd == "scp":
-        if len(sys.argv) == 4:
-           exec_time += all_scp(ssh, sys.argv[2], sys.argv[3]) 
-        else:
-            usage()
+    elif cmd == "upgrade":
+        exec_time += all_upgrade(ssh, nodes)
     elif cmd == "exec":
         # TODO: use getopt
         if len(sys.argv) >= 3:
             exec_time += all_exec(ssh, sys.argv[2])
+        else:
+            usage()
+    elif cmd == "scp":
+        if len(sys.argv) == 4:
+           exec_time += all_scp(ssh, sys.argv[2], sys.argv[3]) 
         else:
             usage()
     else:
@@ -465,7 +496,7 @@ def main():
     print("execution time:", exec_time, "s")
 
 def usage():
-    print("Usage: python3 %s { init | up | down | restart | setup | reset | exec | scp }" % (sys.argv[0]))
+    print("Usage: python3 %s { init | up | down | restart | setup | reset | upgrade | exec | scp }" % (sys.argv[0]))
 
 if __name__ == "__main__":
     if len(sys.argv) < 2: 
