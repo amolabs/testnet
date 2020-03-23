@@ -74,14 +74,14 @@ def all_down(ssh, nodes):
 
     return time.time() - b_time
 
-def all_upgrade(ssh, nodes):
+def all_upgrade(ssh, nodes, force=False):
     b_time = time.time()
 
     nodes = {**nodes}
 
     # seed, val... : parallel
     print("upgrade nodes")
-    upgrade_node(ssh, nodes)
+    upgrade_node(ssh, nodes, force)
 
     print()
     nodes.clear()
@@ -255,13 +255,14 @@ def install_node(ssh, amo, nodes):
         print(err)
         exit(1)
 
-def upgrade_node(ssh, nodes):
+def upgrade_node(ssh, nodes, force):
     try:
         host_args = get_host_args(ssh.hosts, nodes) 
 
         print("execute 'upgrade.sh' script:", ssh.hosts, end='', flush=True)
-        command = "cd " + ORCH_REMOTE_PATH + "; " + \
-                "./upgrade.sh " + DATAROOT_REMOTE_PATH + "/%(target)s"
+        command = "cd " + ORCH_REMOTE_PATH + "; ./upgrade.sh "
+        if force: command += "-f "
+        command += DATAROOT_REMOTE_PATH + "/%(target)s"
         ssh_exec(ssh, command, host_args=host_args, wait=True, echo=True)
         print(" - DONE")
 
@@ -479,6 +480,8 @@ def main():
         exec_time += all_faucet_stake(ssh, amo, nodes)
     elif cmd == "upgrade":
         exec_time += all_upgrade(ssh, nodes)
+    elif cmd == "upgrade_f":
+        exec_time += all_upgrade(ssh, nodes, True)
     elif cmd == "exec":
         # TODO: use getopt
         if len(sys.argv) >= 3:
