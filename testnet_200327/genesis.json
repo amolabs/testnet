@@ -1,0 +1,62 @@
+{
+  "genesis_time": "2020-03-27T00:00:00.000000Z",
+  "chain_id": "amo-testnet-200327",
+  "consensus_params": {
+    "block": {
+      "max_bytes": "22020096",
+      "max_gas": "-1",
+      "time_iota_ms": "1000"
+    },
+    "evidence": {
+      "max_age_num_blocks": "100000",
+      "max_age_duration": "1"
+    },
+    "validator": {
+      "pub_key_types": [
+        "ed25519"
+      ]
+    }
+  },
+  "validators": [
+    {
+      "address": "374F91DF66EC65067BA172EEB26A121C65E14DD3",
+      "pub_key": {
+        "type": "tendermint/PubKeyEd25519",
+        "value": "Ap8YFoIIsjq4kD/kHjvyTkME1qn7IZqEk8r8tKArE/E="
+      },
+      "power": "10",
+      "name": ""
+    }
+  ],
+  "app_state": {
+    "config": {
+      "max_validators": 100,
+      "weight_validator": 1.2,
+      "weight_delegator": 1,
+      "min_staking_unit": "1000000000000000000000000",
+      "tx_reward": "150000000000000000", 
+      "penalty_ratio_m": 0.05,
+      "penalty_ratio_l": 0.05,
+      "laziness_counter_window": 100000, 
+      "laziness_threshold": 0.8,
+      "block_binding_window": 10000,
+      "lockup_period": 300000,
+      "draft_open_count": 10000,
+      "draft_close_count": 10000,
+      "draft_apply_count": 10000,
+      "draft_deposit": "1000000000000000000000000",
+      "draft_quorum_rate": 0.3,
+      "draft_pass_rate": 0.51,
+      "draft_refund_rate": 0.2
+    },
+    "balances": [
+      {
+        "owner": "BEFF22606A9FB730455736E7B33C846171F2865C",
+        "amount": "20000000000000000000000000000"
+      }
+    ],
+    "stakes": [],
+    "extra": "Designed and Developped by AMO Labs."
+  },
+  "app_hash": ""
+}
