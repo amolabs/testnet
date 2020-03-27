@@ -49,11 +49,10 @@ def all_up(ssh, amo, nodes):
     b_time = time.time()
 
     nodes = {**nodes}
-    image_version = amo["version"] 
     
     # seed, val... : parallel
     print("bootstrap nodes")
-    bootstrap(ssh, nodes, image_version)
+    bootstrap(ssh, nodes)
 
     print()
     nodes.clear()
@@ -129,7 +128,8 @@ def all_setup(ssh, amo, nodes):
     print("setup nodes")
 
     # install on seed, val... : parallel
-    install_node(ssh, amo, nodes)
+    if amo["version"] != "":
+        install_node(ssh, amo, nodes)
         
     # transfer to seed, val... : parallel
     transfer_config(ssh, amo, nodes) 
@@ -205,7 +205,7 @@ def transfer(rpc_addr, username, to_addr, amount):
     result = amocli_exec("transfer", rpc_addr, username, to_addr, amount)
     print(result.decode('utf-8'))
 
-def bootstrap(ssh, nodes, image_version):
+def bootstrap(ssh, nodes):
     try:
         host_args = get_host_args(ssh.hosts, nodes) 
 
