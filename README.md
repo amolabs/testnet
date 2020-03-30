@@ -71,10 +71,11 @@ pip3 install -r requirements.txt
 ### Requiries
 To use the script, the preset data are required as follows:
 - `$HOME/.ssh/id_rsa`: ssh private key 
-- `orchestration/config.json`: containing node info
+- `orchestration/config.json`: node orchestration info
 - `orchestration/data/<target>/node_key.json`: tendermint node key
 - `orchestration/data/<target>/priv_validator_key.json`: tendermint validator
   key
+- `orchestration/data/<target>/config.toml.in`: tendermint config file
 
 The tendermint related keys located under `data` folder should correspond with
 the ones written in the `orchestation/config.json`.

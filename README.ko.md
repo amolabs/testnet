@@ -55,10 +55,11 @@ peer를 알지 못한다면 이 노드를 peer로 지정할 것을 권장한다.
 ### 필수사항
 이 스크립트를 사용하기 위해서는 다음의 프리셋 데이터가 필요하다:
 - `$HOME/.ssh/id_rsa`: ssh 프라이빗 키
-- `orchestration/config.json`: 노드 정보
+- `orchestration/config.json`: 노드 orchestration 정보
 - `orchestration/data/<target>/node_key.json`: tendermint 노드 키
 - `orchestration/data/<target>/priv_validator_key.json`: tendermint validator
   키
+- `orchestration/data/<target>/config.toml.in`: tendermint config 파일
 
 `data` 폴더 아래에 위치한 tendermint 관련 키 정보는
 `orchestration/config.json`에 적힌 정보와 일치하여야 한다.

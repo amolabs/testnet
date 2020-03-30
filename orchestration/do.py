@@ -10,10 +10,11 @@ from pssh.clients import ParallelSSHClient
 from gevent import joinall
 
 CURRENT_PATH = os.getcwd()
-ORCH_PATH = CURRENT_PATH + "/orchestration"
-CONFIG_PATH =  ORCH_PATH + "/config.json"
-DATA_PATH = ORCH_PATH + "/data"
-DEFAULT_KEY_PATH = os.environ["HOME"] + "/.ssh/id_rsa"
+ORCH_PATH = os.path.join(CURRENT_PATH,"orchestration")
+CONFIG_PATH =  os.path.join(ORCH_PATH, "config.json")
+COMMON_DATA_PATH = os.path.join(ORCH_PATH, "common")
+DATA_PATH = os.path.join(ORCH_PATH, "data")
+DEFAULT_KEY_PATH = os.path.join(os.environ["HOME"], ".ssh", "id_rsa")
 
 ORCH_REMOTE_PATH="orchestration"
 DATAROOT_REMOTE_PATH="/testnet"
@@ -282,16 +283,10 @@ def transfer_config(ssh, amo, nodes):
         if err: raise Exception(err)
 
         print("prepare config files to transfer:", ssh.hosts, end='', flush=True)
-        for f in os.listdir(CURRENT_PATH):
-            if not os.path.isfile(os.path.join(CURRENT_PATH, f)):
-                continue
-            if not f.endswith(".sh") and not f.endswith(".in") and \
-               not f.endswith(".json") and not f.endswith(".service"):
-                continue
-
+        for f in os.listdir(COMMON_DATA_PATH):
             for target in nodes.keys():
                 from_path = os.path.join(CURRENT_PATH, f)
-                to_path = os.path.join(DATA_PATH + "/" + target + "/", f)
+                to_path = os.path.join(DATA_PATH, target, f)
 
                 command = "cp %s %s" % (from_path, to_path)
                 proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
