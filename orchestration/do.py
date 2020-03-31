@@ -106,7 +106,7 @@ def all_faucet_stake(ssh, amo, nodes):
                 valkey = json.load(file)
                 val_pubkey = valkey['pub_key']['value']
         if val_pubkey is None:
-            return
+            continue
 
         amount = node["stake_amount"]
 
