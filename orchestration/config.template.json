@@ -12,15 +12,18 @@
 	"nodes": {
 		"seed": {
 			"ip_addr": "123.456.789.0",
-			"amo_addr": "__amo_address_to_stake_with__"
+			"amo_addr": "__amo_address_to_stake_with__",
+			"stake_amount": "__amount_of_coin_to_stake__"
 		},
 		"val1": {
 			"ip_addr": "123.456.789.1",
-			"amo_addr": "__amo_address_to_stake_with__"
+			"amo_addr": "__amo_address_to_stake_with__",
+			"stake_amount": "__amount_of_coin_to_stake__"
 		},
 		"val2": {
 			"ip_addr": "123.456.789.2",
-			"amo_addr": "__amo_address_to_stake_with__"
+			"amo_addr": "__amo_address_to_stake_with__",
+			"stake_amount": "__amount_of_coin_to_stake__"
 		}
 	}
 }

@@ -28,7 +28,6 @@ AMOCLIOPT = "--json"
 AMOCLI = AMOCLICMD + ' ' + AMOCLIOPT
 
 ONEAMO = 1000000000000000000
-STAKEAMOUNT = "1000000000000000000000000000"
 
 #########################
 # Support Parallel Mode #
@@ -93,8 +92,6 @@ def all_faucet_stake(ssh, amo, nodes):
 
     nodes = {**nodes}
 
-    amount = STAKEAMOUNT
-   
     rpc_addr = nodes["val1"]["ip_addr"] + ":26657"
 
     if "seed" in nodes:
@@ -110,6 +107,8 @@ def all_faucet_stake(ssh, amo, nodes):
                 val_pubkey = valkey['pub_key']['value']
         if val_pubkey is None:
             return
+
+        amount = node["stake_amount"]
 
         print("faucet to %s: %s" % (target, amount)) 
         transfer(rpc_addr, amo["faucet_user"], node["amo_addr"], amount) 
