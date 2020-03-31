@@ -4,6 +4,7 @@
 		"ssh_username": "__ssh_username__"
 	},
 	"amo": {
+		"chain_name": "__nickname_for_chain__",
 		"genesis_file": "__genesis_file_path__",
 		"version": "__amod_version__",
 		"faucet_user": "__amo_faucet_account__",

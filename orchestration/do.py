@@ -108,10 +108,15 @@ def all_faucet_stake(ssh, amo, nodes):
         if val_pubkey is None:
             continue
 
-        amount = node["stake_amount"]
+        if node['stake_amount'] == '':
+            continue
+
+        faucet = amo['chain_name'] + '_' + amo['faucet_user']
+        target = amo['chain_name'] + '_' + target
+        amount = node['stake_amount']
 
         print("faucet to %s: %s" % (target, amount)) 
-        transfer(rpc_addr, amo["faucet_user"], node["amo_addr"], amount) 
+        transfer(rpc_addr, faucet, node["amo_addr"], amount) 
         print("stake for %s: %s" % (target, amount)) 
         stake(rpc_addr, target, val_pubkey, amount)
 
@@ -327,11 +332,12 @@ def setup_node(ssh, amo, nodes, peer):
     node_id = ''
     try:
         host_args = get_host_args(ssh.hosts, nodes) 
+        dataroot_remote_path = os.path.join("/", amo["chain_name"])
 
         print("execute 'setup.sh' script:", ssh.hosts, end='', flush=True)
         command = "cd " + ORCH_REMOTE_PATH + "; " + \
                 "./setup.sh -e %(ip)s " + \
-                DATAROOT_REMOTE_PATH + "/%(target)s %(target)s " + peer
+                dataroot_remote_path + "/%(target)s %(target)s " + peer
         output = ssh_exec(ssh, command, host_args=host_args, wait=True)
         print(" - DONE")
 
