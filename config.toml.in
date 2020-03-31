@@ -158,10 +158,10 @@ laddr = "tcp://0.0.0.0:26656"
 external_address = "@external@"
 
 # Comma separated list of seed nodes to connect to
-seeds = ""
+seeds = "@peers@"
 
 # Comma separated list of nodes to keep persistent connections to
-persistent_peers = "@peers@"
+persistent_peers = ""
 
 # UPNP port forwarding
 upnp = false
