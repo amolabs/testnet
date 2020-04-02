@@ -90,10 +90,10 @@ if [ ! -f $DATAROOT/amo/data/priv_validator_state.json ]; then
 fi
 
 # init tendermint
-/usr/local/bin/amod --home $DATAROOT/amo tendermint init
+/usr/bin/amod --home $DATAROOT/amo tendermint init
 
 # show tendermint node id
-/usr/local/bin/amod --home $DATAROOT/amo tendermint show_node_id 2> /dev/null
+/usr/bin/amod --home $DATAROOT/amo tendermint show_node_id 2> /dev/null
 
 rm -f *.tmp
 
