@@ -23,4 +23,4 @@ fi
 
 echo "data root 	= $DATAROOT"
 
-/usr/bin/amod run --home $DATAROOT 
+amod run --home $DATAROOT 

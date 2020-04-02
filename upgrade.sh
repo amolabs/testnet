@@ -15,7 +15,7 @@
 # - release <- curl https://api.github.com/repos/amolabs/amoabci/releases/latest
 # - wget relase.download_url -O release.name
 # - tar -xzf latest.assets[0].name
-# - cp -f amod /usr/bin/amod
+# - cp -f amod $(which amod)
 #
 # overall flow:
 # - check
@@ -32,21 +32,21 @@ PROGRESS_BAR_SIZE=60
 
 usage() {
     echo "syntax: $0 [options] <data_root>"
-	echo "options:"
-	echo "  -f  force upgrade"
-	echo "  -h  print usage"
+    echo "options:"
+    echo "  -f  force upgrade"
+    echo "  -h  print usage"
 }
 
 while getopts "fh" arg; do
-	case $arg in
-		f)
-			MODE='force'
-			;;
-		h | *)
-			usage
-			exit
-			;;
-	esac
+    case $arg in
+        f)
+        	MODE='force'
+        	;;
+        h | *)
+        	usage
+        	exit
+        	;;
+    esac
 done
 
 shift $(( OPTIND - 1))
@@ -57,7 +57,7 @@ print_h() {
 
 fail() {
     print_h "upgrade failed"
-	exit -1
+    exit -1
 }
 
 read_json() {
@@ -94,7 +94,7 @@ progress_bar() {
 }
 
 check() {
-	print_h "check if protocol needs to get upgraded"
+    print_h "check if protocol needs to get upgraded"
 
     height=$1
     upgrade_protocol_height=$2
@@ -107,7 +107,7 @@ check() {
 }
 
 prepare() {
-	print_h "prepare necessary things to upgrade protocol"
+    print_h "prepare necessary things to upgrade protocol"
 
     print_h "  get latest release info"
     release=$(curl -s https://api.github.com/repos/amolabs/amoabci/releases/latest | sed 's/\\r\\n//')
@@ -125,7 +125,7 @@ prepare() {
 }
 
 standby() {
-	print_h "wait for height to reach upgrade protocol height"
+    print_h "wait for height to reach upgrade protocol height"
 
     height=$1
     last_height=$2
@@ -149,17 +149,17 @@ standby() {
 }
 
 upgrade() {
-	print_h "execute protocol upgrade"
+    print_h "execute protocol upgrade"
 
     print_h "  copy latest amod"
-    out=$(sudo cp -f amod /usr/bin/amod)
+    out=$(sudo cp -f amod $(which amod))
     if [ $? -ne 0 ]; then fail; fi
 
     print_h "  restart amod service"
     out=$(sudo systemctl restart amod)
     if [ $? -ne 0 ]; then fail; fi
 
-	print_h "successfully upgraded protocol"
+    print_h "successfully upgraded protocol"
 }
 
 DATAROOT=$1
@@ -171,27 +171,27 @@ fi
 print_h "dataroot=$DATAROOT"
 
 case $MODE in
-	'normal')
-		# load upgrade_protocol_height from node config
-		query='{"jsonrpc": "2.0", "id": 0, "method": "abci_query", "params": {"path": "/config", "data": "6e756c6c"}}'
-		config=$(curl -s -H "Content-Type: application/json" -X POST -d "$query" localhost:26657)
-		if [ $? -ne 0 ]; then fail; fi
-		config=$(read_json "$config" "['result']['response']['value']" | base64 --decode)
-		upgrade_protocol_height=$(read_json "$config" "['upgrade_protocol_height']")
-		 
-		# load height and last_height from $DATAROOT/amo/data/state.json
-		state=$(cat $DATAROOT/amo/data/state.json)
-		height=$(read_json "$state" "['height']")
-		last_height=$(read_json "$state" "['last_height']")
+    'normal')
+        # load upgrade_protocol_height from node config
+        query='{"jsonrpc": "2.0", "id": 0, "method": "abci_query", "params": {"path": "/config", "data": "6e756c6c"}}'
+        config=$(curl -s -H "Content-Type: application/json" -X POST -d "$query" localhost:26657)
+        if [ $? -ne 0 ]; then fail; fi
+        config=$(read_json "$config" "['result']['response']['value']" | base64 --decode)
+        upgrade_protocol_height=$(read_json "$config" "['upgrade_protocol_height']")
+         
+        # load height and last_height from $DATAROOT/amo/data/state.json
+        state=$(cat $DATAROOT/amo/data/state.json)
+        height=$(read_json "$state" "['height']")
+        last_height=$(read_json "$state" "['last_height']")
 
-		check "$height" "$upgrade_protocol_height"
-		prepare
-		standby "$height" "$last_height" "$upgrade_protocol_height"
-		upgrade
-		;;
-	'force')
-		prepare
-		upgrade
-		;;
+        check "$height" "$upgrade_protocol_height"
+        prepare
+        standby "$height" "$last_height" "$upgrade_protocol_height"
+        upgrade
+        ;;
+    'force')
+        prepare
+        upgrade
+        ;;
 esac
 
