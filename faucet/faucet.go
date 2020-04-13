@@ -191,6 +191,11 @@ func main() {
 			c.String(500, err.Error())
 			return
 		}
+		if result.DeliverTx.Code != 0 {
+			err = fmt.Errorf("error in tx: %s", result.DeliverTx.Info)
+			c.String(500, err.Error())
+			return
+		}
 
 		wq.Push(reqData.Recp)
 
