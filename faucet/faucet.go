@@ -10,6 +10,7 @@ import (
 
 	"github.com/amolabs/amo-client-go/lib/keys"
 	"github.com/amolabs/amo-client-go/lib/rpc"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -123,6 +124,10 @@ func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"POST"},
+	}))
 	r.POST("", func(c *gin.Context) {
 		var reqData struct {
 			Recp string `json:"recp"`
