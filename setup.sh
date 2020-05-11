@@ -63,6 +63,7 @@ fi
 
 # prepare amod.service 
 cp run.sh /root/amod_run.sh
+cp -f amod.service.in amod.service
 sed -e s#@dataroot@#$DATAROOT/amo# -i.tmp amod.service
 cp amod.service /etc/systemd/system/amod.service
 
