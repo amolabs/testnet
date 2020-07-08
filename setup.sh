@@ -72,11 +72,10 @@ systemctl enable amod
 
 # put config.toml into DATAROOT
 mv -f config.toml $DATAROOT/amo/config/
-if [ $MODE == "testnet" ]; then
+
+# put genesis.json if exists
+if [ -f genesis.json ]; then
 	cp -f genesis.json $DATAROOT/amo/config/
-else
-	# this will create a new arbitrary genesis file
-	rm -f $DATAROOT/amo/config/genesis.json
 fi
 
 # put node_key.json, priv_validator_key.json, priv_validator_state.json into DATAROOT
