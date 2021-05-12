@@ -1,0 +1,50 @@
+# vim: set expandtab sw=2:
+
+# <peeer dependency>
+# - val1 <- val2, val3
+
+version: '3.3'
+services:
+  val1:
+    container_name: val1
+    image: __image__
+    networks:
+      - amolocal
+    environment:
+      - MONIKER=val1
+      - PEERS=
+    ports:
+      - "26656-26657:26656-26657"
+    volumes:
+      - __dataroot__/val1/amo:/amo:Z
+
+  val2:
+    container_name: val2
+    image: __image__
+    networks:
+      - amolocal
+    environment:
+      - MONIKER=val2
+      - PEERS=__val1_node_addr__@val1:26656
+    volumes:
+      - __dataroot__/val2/amo:/amo:Z
+
+  val3:
+    container_name: val3
+    image: __image__
+    networks:
+      - amolocal
+    environment:
+      - MONIKER=val3
+      - PEERS=__val1_node_addr__@val1:26656
+    volumes:
+      - __dataroot__/val3/amo:/amo:Z
+
+networks:
+  amolocal:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      -
+        subnet: 192.167.10.0/24

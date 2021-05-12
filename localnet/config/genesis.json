@@ -1,0 +1,55 @@
+{
+  "genesis_time": "2019-07-24T03:00:00.000000Z",
+  "chain_id": "amo-test-dev",
+  "consensus_params": {
+    "block": {
+      "max_bytes": "22020096",
+      "max_gas": "-1",
+      "time_iota_ms": "1000"
+    },
+    "evidence": {
+      "max_age_num_blocks": "100000",
+      "max_age_duration": "1"
+    },
+    "validator": {
+      "pub_key_types": [
+        "ed25519"
+      ]
+    }
+  },
+  "validators": [
+    {
+      "address": "2D51CD3DBC30F1ECEA59FEF65F918C631E8F5677",
+      "pub_key": {
+        "type": "tendermint/PubKeyEd25519",
+        "value": "qaqks0xOUBUSas43ajn9jvT6H+8rVtxLAUAZ7iBPySc="
+      },
+      "power": "10",
+      "name": ""
+    }
+  ],
+  "app_state": {
+    "state": {
+        "protocol_version": 4
+    },
+    "config": {
+        "min_staking_unit": "10000",
+        "penalty_ratio_m": 0.5,
+        "penalty_ratio_l": 0.5,
+        "laziness_window": 10, 
+        "laziness_threshold": 5,
+        "hibernate_threshold": 5,
+        "hibernate_period": 20,
+        "block_binding_window":25,
+        "lockup_period": 20 
+    },
+    "balances": [
+      {
+        "owner": "BEFF22606A9FB730455736E7B33C846171F2865C",
+        "amount": "10000000000000000000000000"
+      }
+    ],
+    "stakes": []
+  },
+  "app_hash": ""
+}
