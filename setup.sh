@@ -3,21 +3,23 @@
 # default setting
 EXTADDR=""
 DOCKER=false
+IMAGE_VERSION=latest
 RESET=false
 
 usage() {
     echo "syntax: $0 [options] <data_root> <moniker> [peers] "
     echo "options:"
-    echo "  -d  use docker"
+    echo "  -d  use docker with specified image version"
     echo "  -r  reset data root"
     echo "  -e  external address"
     echo "  -h  print usage"
 }
 
-while getopts "dre:h" arg; do
+while getopts "d:re:h" arg; do
     case $arg in
         d)
             DOCKER=true
+            IMAGE_VERSION=$OPTARG
             ;;
         r)  
             RESET=true
@@ -92,10 +94,10 @@ fi
 
 if [ "$DOCKER" = true ]; then
     # init tendermint
-    docker run -it --rm -v $DATAROOT/amo:/amo amolabs/amod amod tendermint init
+    docker run -it --rm -v $DATAROOT/amo:/amo amolabs/amod:$IMAGE_VERSION amod tendermint init
 
     # show tendermint id
-    docker run -it --rm -v $DATAROOT/amo:/amo amolabs/amod amod tendermint show_node_id 2> /dev/null
+    docker run -it --rm -v $DATAROOT/amo:/amo amolabs/amod:$IMAGE_VERSION amod tendermint show_node_id 2> /dev/null
 else
     # prepare amod.service
     cp run.sh /root/amod_run.sh
