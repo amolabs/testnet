@@ -21,7 +21,7 @@ while getopts "d:psh" arg; do
 			IMAGE_VERSION=$OPTARG
 			;;
 		p)
-			PUBLISH="-p 26656-26657 -p 26660"
+			PUBLISH="-p 26656:26656 -p 26657:26657 -p 26660:26660"
 			;;
 		s)
 			TTY="-d"
