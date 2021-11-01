@@ -45,7 +45,9 @@ echo "data root     = $DATAROOT"
 
 if [ "$DOCKER" = true ]; then
 	echo "docker image  = $IMAGE_VERSION"
-	docker run $TTY --rm --name amod $PUBLISH -v $DATAROOT/amo:/amo amolabs/amod:$IMAGE_VERSION amod run --home /amo
+	docker stop amod -t 5
+	docker rm amod
+	docker run $TTY --restart unless-stopped --name amod $PUBLISH -v $DATAROOT/amo:/amo amolabs/amod:$IMAGE_VERSION amod run --home /amo
 else
 	amod run --home $DATAROOT/amo
 fi
