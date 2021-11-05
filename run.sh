@@ -12,10 +12,11 @@ usage() {
 	echo "  -d  use docker with specified image version"
 	echo "  -p  publish ports 26656,26657,26660"
 	echo "  -s  keep silent, i.e. do not attach stdio"
+	echo "  -l  turn on journald log facility"
 	echo "  -h  print usage"
 }
 
-while getopts "d:psh" arg; do
+while getopts "d:pslh" arg; do
 	case $arg in
 		d)
 			DOCKER=true
