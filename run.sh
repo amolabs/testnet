@@ -4,6 +4,7 @@ DOCKER=false
 IMAGE_VERSION=latest
 PUBLISH="-p 26657"
 TTY="-it"
+LOG=""
 
 usage() {
 	echo "syntax: $0 [options] <data_root>"
@@ -26,6 +27,9 @@ while getopts "d:psh" arg; do
 		s)
 			TTY="-d"
 			;;
+		l)
+			LOG="--log-driver=journald"
+			;;
 		h | *)
 			usage
 			exit
@@ -47,7 +51,7 @@ if [ "$DOCKER" = true ]; then
 	echo "docker image  = $IMAGE_VERSION"
 	docker stop amod -t 5
 	docker rm amod
-	docker run $TTY --restart unless-stopped --name amod $PUBLISH -v $DATAROOT/amo:/amo amolabs/amod:$IMAGE_VERSION amod run --home /amo
+	docker run $TTY $LOG --restart unless-stopped --name amod $PUBLISH -v $DATAROOT/amo:/amo amolabs/amod:$IMAGE_VERSION amod run --home /amo
 else
 	amod run --home $DATAROOT/amo
 fi
